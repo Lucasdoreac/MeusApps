@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:primeiroApp.ViewModels"
+    xmlns:models="clr-namespace:primeiroApp.Models"
+    x:Class="primeiroApp.Pages.DashboardPage"
+    BackgroundColor="{StaticResource LudocBg}"
+    Shell.NavBarIsVisible="False">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="0">
+
+            <!-- ══ TELEMETRIA ══════════════════════════════════════════ -->
+            <Label Text="SYSTEM METRICS"
+                   FontFamily="Courier New" FontSize="9"
+                   TextColor="{StaticResource LudocDim}"
+                   Margin="12,12,12,6" CharacterSpacing="2"/>
+
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto"
+                  RowSpacing="1" ColumnSpacing="1"
+                  BackgroundColor="{StaticResource LudocBorder}"
+                  Margin="0,0,0,1">
+
+                <!-- CPU -->
+                <VerticalStackLayout Grid.Row="0" Grid.Column="0"
+                                     BackgroundColor="#0D0F12" Padding="12,10">
+                    <Label Text="CPU" FontFamily="Courier New" FontSize="9"
+                           TextColor="{StaticResource LudocDim}" CharacterSpacing="1"/>
+                    <Label Text="{Binding Telemetry.Node01.Cpu, StringFormat='{0}%'}"
+                           FontFamily="Courier New" FontSize="26"
+                           TextColor="{Binding Telemetry.Node01.Cpu, Converter={StaticResource ThresholdColorConverter}, ConverterParameter=80}"/>
+                    <ProgressBar Progress="{Binding Telemetry.Node01.Cpu, Converter={StaticResource IntToProgressConverter}}"
+                                 ProgressColor="{Binding Telemetry.Node01.Cpu, Converter={StaticResource ThresholdColorConverter}, ConverterParameter=80}"
+                                 BackgroundColor="{StaticResource LudocBorder}"
+                                 HeightRequest="3" Margin="0,4,0,0"/>
+                </VerticalStackLayout>
+
+                <!-- RAM SYSTEM -->
+                <VerticalStackLayout Grid.Row="0" Grid.Column="1"
+                                     BackgroundColor="#0D0F12" Padding="12,10">
+                    <Label Text="RAM" FontFamily="Courier New" FontSize="9"
+                           TextColor="{StaticResource LudocDim}" CharacterSpacing="1"/>
+                    <Label Text="{Binding Telemetry.Node01.Ram, StringFormat='{0}%'}"
+                           FontFamily="Courier New" FontSize="26"
+                           TextColor="{Binding Telemetry.Node01.Ram, Converter={StaticResource RamColorConverter}}"/>
+                    <ProgressBar Progress="{Binding Telemetry.Node01.Ram, Converter={StaticResource RamToProgressConverter}}"
+                                 ProgressColor="{Binding Telemetry.Node01.Ram, Converter={StaticResource RamColorConverter}}"
+                                 BackgroundColor="{StaticResource LudocBorder}"
+                                 HeightRequest="3" Margin="0,4,0,0"/>
+                </VerticalStackLayout>
+
+                <!-- DISK C: -->
+                <VerticalStackLayout Grid.Row="1" Grid.Column="0"
+                                     BackgroundColor="#0D0F12" Padding="12,10">
+                    <Label Text="DISK C:" FontFamily="Courier New" FontSize="9"
+                           TextColor="{StaticResource LudocDim}" CharacterSpacing="1"/>
+                    <Label Text="{Binding DiskLabel}"
+                           FontFamily="Courier New" FontSize="18"
+                           TextColor="{Binding Telemetry.Disk.FreeGb, Converter={StaticResource DiskColorConverter}}"/>
+                    <ProgressBar Progress="{Binding DiskProgress}"
+                                 ProgressColor="{Binding Telemetry.Disk.FreeGb, Converter={StaticResource DiskColorConverter}}"
+                                 BackgroundColor="{StaticResource LudocBorder}"
+                                 HeightRequest="3" Margin="0,4,0,0"/>
+                </VerticalStackLayout>
+
+                <!-- SWAP / PAGEFILE -->
+                <VerticalStackLayout Grid.Row="1" Grid.Column="1"
+                                     BackgroundColor="#0D0F12" Padding="12,10">
+                    <Label Text="SWAP" FontFamily="Courier New" FontSize="9"
+                           TextColor="{StaticResource LudocDim}" CharacterSpacing="1"/>
+                    <Label Text="{Binding PagefileLabel}"
+                           FontFamily="Courier New" FontSize="18"
+                           TextColor="{Binding Telemetry.PagefileMb, Converter={StaticResource PagefileColorConverter}}"/>
+                </VerticalStackLayout>
+
+                <!-- HAKO RAM -->
+                <VerticalStackLayout Grid.Row="2" Grid.Column="0"
+                                     BackgroundColor="#0D0F12" Padding="12,10">
+                    <Label Text="HAKO RAM" FontFamily="Courier New" FontSize="9"
+                           TextColor="{StaticResource LudocDim}" CharacterSpacing="1"/>
+                    <Label Text="{Binding Telemetry.Hako.Ram, StringFormat='{0} MB'}"
+                           FontFamily="Courier New" FontSize="18"
+                           TextColor="{StaticResource LudocAmber}"/>
+                </VerticalStackLayout>
+
+                <!-- SERVER STATUS -->
+                <VerticalStackLayout Grid.Row="2" Grid.Column="1"
+                                     BackgroundColor="#0D0F12" Padding="12,10">
+                    <Label Text="SERVER" FontFamily="Courier New" FontSize="9"
+                           TextColor="{StaticResource LudocDim}" CharacterSpacing="1"/>
+                    <Label Text="{Binding ServerOnline, Converter={StaticResource OnlineStatusConverter}}"
+                           FontFamily="Courier New" FontSize="14"
+                           TextColor="{Binding ServerOnline, Converter={StaticResource OnlineColorConverter}}"/>
+                </VerticalStackLayout>
+            </Grid>
+
+            <!-- ══ ALERTS ════════════════════════════════════════════ -->
+            <Grid ColumnDefinitions="*,Auto" Padding="12,12,12,6">
+                <Label Grid.Column="0" Text="ALERTS"
+                       FontFamily="Courier New" FontSize="9"
+                       TextColor="{StaticResource LudocDim}" CharacterSpacing="2"/>
+                <Label Grid.Column="1"
+                       Text="{Binding Alerts.Count}"
+                       FontFamily="Courier New" FontSize="9"
+                       TextColor="{StaticResource LudocRed}"
+                       BackgroundColor="{StaticResource LudocBorder}"
+                       Padding="6,2"
+                       IsVisible="{Binding Alerts.Count, Converter={StaticResource IntToBoolConverter}}"/>
+            </Grid>
+            <BoxView HeightRequest="1" Color="{StaticResource LudocBorder}"/>
+
+            <CollectionView ItemsSource="{Binding Alerts}">
+                <CollectionView.EmptyView>
+                    <Label Text="no alerts" FontFamily="Courier New" FontSize="10"
+                           TextColor="{StaticResource LudocDim}"
+                           HorizontalOptions="Center" Margin="0,12"/>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:SystemAlert">
+                        <Grid ColumnDefinitions="24,*" Padding="12,8" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="{Binding LevelIcon}"
+                                   FontFamily="Courier New" FontSize="14"
+                                   TextColor="{Binding LevelColor}"
+                                   VerticalOptions="Center"/>
+                            <Label Grid.Column="1" Text="{Binding Message}"
+                                   FontFamily="Courier New" FontSize="11"
+                                   TextColor="{Binding LevelColor}"
+                                   LineBreakMode="WordWrap"/>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- ══ TOP PROCESSOS ════════════════════════════════════ -->
+            <Grid ColumnDefinitions="*,Auto" Padding="12,12,12,6">
+                <Label Grid.Column="0" Text="TOP PROCESSES"
+                       FontFamily="Courier New" FontSize="9"
+                       TextColor="{StaticResource LudocDim}" CharacterSpacing="2"/>
+                <Label Grid.Column="1" Text="RAM ▼"
+                       FontFamily="Courier New" FontSize="9"
+                       TextColor="{StaticResource LudocDim}"/>
+            </Grid>
+            <BoxView HeightRequest="1" Color="{StaticResource LudocBorder}"/>
+
+            <CollectionView ItemsSource="{Binding TopProcesses}">
+                <CollectionView.EmptyView>
+                    <Label Text="no data yet" FontFamily="Courier New" FontSize="10"
+                           TextColor="{StaticResource LudocDim}"
+                           HorizontalOptions="Center" Margin="0,12"/>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:ProcessInfo">
+                        <Grid ColumnDefinitions="*,70,60" Padding="12,7" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="{Binding ShortName}"
+                                   FontFamily="Courier New" FontSize="11"
+                                   TextColor="{StaticResource LudocText2}"
+                                   LineBreakMode="TailTruncation"/>
+                            <Label Grid.Column="1"
+                                   Text="{Binding RamMb, StringFormat='{0}MB'}"
+                                   FontFamily="Courier New" FontSize="11"
+                                   TextColor="{StaticResource LudocAmber}"
+                                   HorizontalTextAlignment="End"/>
+                            <Label Grid.Column="2"
+                                   Text="{Binding CpuSecs, StringFormat='{0}s'}"
+                                   FontFamily="Courier New" FontSize="10"
+                                   TextColor="{StaticResource LudocDim}"
+                                   HorizontalTextAlignment="End"/>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- ══ TASK QUEUE ════════════════════════════════════════ -->
+            <Grid ColumnDefinitions="*,Auto" Padding="12,12,12,6">
+                <Label Grid.Column="0" Text="TASK QUEUE"
+                       FontFamily="Courier New" FontSize="9"
+                       TextColor="{StaticResource LudocDim}" CharacterSpacing="2"/>
+                <Label Grid.Column="1"
+                       Text="{Binding ActiveTaskCount}"
+                       FontFamily="Courier New" FontSize="9"
+                       TextColor="{StaticResource LudocText2}"
+                       BackgroundColor="{StaticResource LudocBorder}"
+                       Padding="6,2"/>
+            </Grid>
+            <BoxView HeightRequest="1" Color="{StaticResource LudocBorder}"/>
+
+            <CollectionView ItemsSource="{Binding Tasks}" HeightRequest="160">
+                <CollectionView.EmptyView>
+                    <Label Text="no tasks" FontFamily="Courier New" FontSize="10"
+                           TextColor="{StaticResource LudocDim}"
+                           HorizontalOptions="Center" Margin="0,12"/>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:LudocTask">
+                        <Grid ColumnDefinitions="12,*,Auto" Padding="12,7" ColumnSpacing="10">
+                            <BoxView Grid.Column="0" WidthRequest="6" HeightRequest="6"
+                                     CornerRadius="3" VerticalOptions="Center"
+                                     Color="{Binding Status, Converter={StaticResource TaskStatusColorConverter}}"/>
+                            <Label Grid.Column="1" Text="{Binding ShortQuery}"
+                                   FontFamily="Courier New" FontSize="11"
+                                   TextColor="{StaticResource LudocText2}"
+                                   LineBreakMode="TailTruncation"/>
+                            <Label Grid.Column="2" Text="{Binding Status}"
+                                   FontFamily="Courier New" FontSize="9"
+                                   TextColor="{StaticResource LudocDim}"
+                                   VerticalOptions="Center"/>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- ══ JOURNAL ═══════════════════════════════════════════ -->
+            <Label Text="JOURNAL"
+                   FontFamily="Courier New" FontSize="9"
+                   TextColor="{StaticResource LudocDim}"
+                   Margin="12,12,12,6" CharacterSpacing="2"/>
+            <BoxView HeightRequest="1" Color="{StaticResource LudocBorder}"/>
+
+            <CollectionView ItemsSource="{Binding Journal}">
+                <CollectionView.EmptyView>
+                    <Label Text="no entries" FontFamily="Courier New" FontSize="10"
+                           TextColor="{StaticResource LudocDim}"
+                           HorizontalOptions="Center" Margin="0,12"/>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:JournalEntry">
+                        <Grid ColumnDefinitions="100,Auto,*" Padding="12,6" ColumnSpacing="10">
+                            <Label Grid.Column="0" Text="{Binding ShortAgent}"
+                                   FontFamily="Courier New" FontSize="10"
+                                   TextColor="{StaticResource LudocDim}"/>
+                            <Label Grid.Column="1" Text="{Binding Action}"
+                                   FontFamily="Courier New" FontSize="10"
+                                   TextColor="{StaticResource LudocText}"/>
+                            <Label Grid.Column="2" Text="{Binding ShortTarget}"
+                                   FontFamily="Courier New" FontSize="10"
+                                   TextColor="{StaticResource LudocText2}"
+                                   LineBreakMode="TailTruncation"/>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

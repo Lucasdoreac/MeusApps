@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:primeiroApp.ViewModels"
+    xmlns:models="clr-namespace:primeiroApp.Models"
+    x:Class="primeiroApp.Pages.ChatPage"
+    BackgroundColor="{StaticResource LudocBg}"
+    Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- Header: seletor de agente -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto"
+              Padding="12,8" BackgroundColor="{StaticResource LudocBg}"
+              MinimumHeightRequest="48">
+            <Grid.Shadow>
+                <Shadow Brush="{StaticResource LudocGreen}" Opacity="0.08" Radius="4" Offset="0,2"/>
+            </Grid.Shadow>
+
+            <!-- Seletor Claude / Gemini -->
+            <HorizontalStackLayout Grid.Column="0" Spacing="0">
+                <Button x:Name="ClaudeBtn"
+                        Text="CLAUDE"
+                        Clicked="OnClaudeSelected"
+                        FontFamily="Courier New" FontSize="12"
+                        Padding="14,6"
+                        BackgroundColor="{StaticResource LudocGreen}"
+                        TextColor="#000"
+                        CornerRadius="0"/>
+                <Button x:Name="GeminiBtn"
+                        Text="GEMINI"
+                        Clicked="OnGeminiSelected"
+                        FontFamily="Courier New" FontSize="12"
+                        Padding="14,6"
+                        BackgroundColor="{StaticResource LudocBg}"
+                        TextColor="{StaticResource LudocDim}"
+                        CornerRadius="0"/>
+            </HorizontalStackLayout>
+
+            <!-- Status -->
+            <Label Grid.Column="1"
+                   Text="{Binding StatusText}"
+                   FontFamily="Courier New" FontSize="11"
+                   TextColor="{StaticResource LudocDim}"
+                   VerticalOptions="Center"
+                   Margin="0,0,8,0"/>
+        </Grid>
+
+        <!-- Chat log -->
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Messages}"
+                        x:Name="MessageList"
+                        Margin="0"
+                        ItemsUpdatingScrollMode="KeepLastItemInView">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:ChatMessage">
+                    <Grid ColumnDefinitions="72,*" Padding="12,6" ColumnSpacing="10">
+                        <Label Grid.Column="0"
+                               Text="{Binding SenderLabel}"
+                               FontFamily="Courier New" FontSize="10"
+                               TextColor="{Binding Sender, Converter={StaticResource SenderColorConverter}}"
+                               HorizontalTextAlignment="End"
+                               VerticalOptions="Start"
+                               Margin="0,3,0,0"/>
+                        <Label Grid.Column="1"
+                               Text="{Binding Text}"
+                               FontFamily="Courier New" FontSize="13"
+                               TextColor="{Binding Sender, Converter={StaticResource SenderTextColorConverter}}"
+                               LineBreakMode="WordWrap"/>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Input bar -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto"
+              BackgroundColor="#0D0F12"
+              MinimumHeightRequest="52">
+            <BoxView Grid.ColumnSpan="2" HeightRequest="1"
+                     Color="{StaticResource LudocBorder}"
+                     VerticalOptions="Start"/>
+            <Entry Grid.Column="0"
+                   Text="{Binding InputText, Mode=TwoWay}"
+                   Placeholder="command…"
+                   PlaceholderColor="{StaticResource LudocDim}"
+                   TextColor="{StaticResource LudocText}"
+                   FontFamily="Courier New" FontSize="13"
+                   BackgroundColor="Transparent"
+                   Margin="12,0"
+                   ReturnCommand="{Binding SendCommand}"
+                   IsEnabled="{Binding IsLoading, Converter={StaticResource InvertedBoolConverter}}"/>
+            <Button Grid.Column="1"
+                    Text="SEND"
+                    Command="{Binding SendCommand}"
+                    FontFamily="Courier New" FontSize="12"
+                    BackgroundColor="{StaticResource LudocGreen}"
+                    TextColor="#000"
+                    CornerRadius="0"
+                    Padding="16,0"
+                    MinimumHeightRequest="52"
+                    IsEnabled="{Binding IsLoading, Converter={StaticResource InvertedBoolConverter}}"/>
+        </Grid>
+
+    </Grid>
+</ContentPage>

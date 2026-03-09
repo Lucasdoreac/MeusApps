@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap rescap">
+
+  <Identity Name="com.ludoc.academy.dashboard" Publisher="CN=ludoc" Version="1.0.0.0" />
+
+  <Properties>
+    <DisplayName>LUDOC Dashboard</DisplayName>
+    <PublisherDisplayName>ludoc-productions</PublisherDisplayName>
+    <Logo>Resources\Images\dotnet_bot.png</Logo>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.17763.0" MaxVersionTested="10.0.19041.0" />
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.19041.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="x-generate" />
+  </Resources>
+
+  <Applications>
+    <Application Id="App" Executable="primeiroApp.exe" EntryPoint="primeiroApp.WinUI.App">
+      <uap:VisualElements
+        DisplayName="LUDOC Dashboard"
+        Description="Dashboard de Soberania da Agência LUDOC"
+        Square150x150Logo="Resources\Images\dotnet_bot.png"
+        Square44x44Logo="Resources\Images\dotnet_bot.png"
+        BackgroundColor="transparent">
+        <uap:DefaultTile Square71x71Logo="Resources\Images\dotnet_bot.png" Wide310x150Logo="Resources\Images\dotnet_bot.png" Square310x310Logo="Resources\Images\dotnet_bot.png" />
+        <uap:SplashScreen Image="Resources\Images\dotnet_bot.png" />
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+    <DeviceCapability Name="microphone" />
+    <Capability Name="internetClient" />
+    <Capability Name="privateNetworkClientServer" />
+  </Capabilities>
+
+</Package>

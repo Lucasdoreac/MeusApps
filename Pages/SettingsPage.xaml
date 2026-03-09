@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:primeiroApp.ViewModels"
+    xmlns:local="clr-namespace:primeiroApp"
+    x:Class="primeiroApp.Pages.SettingsPage"
+    BackgroundColor="{StaticResource LudocBg}"
+    Shell.NavBarIsVisible="False">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="20">
+
+            <Label Text="CONFIG" FontFamily="Courier New" FontSize="9"
+                   TextColor="{StaticResource LudocDim}"
+                   CharacterSpacing="2" Margin="0,8,0,0"/>
+
+            <!-- Server URL -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="SERVER URL" FontFamily="Courier New" FontSize="10"
+                       TextColor="{StaticResource LudocText2}" CharacterSpacing="1"/>
+                <Entry Text="{Binding ServerUrl, Mode=TwoWay}"
+                       FontFamily="Courier New" FontSize="13"
+                       TextColor="{StaticResource LudocText}"
+                       BackgroundColor="#0D0F12"
+                       Keyboard="Url"/>
+            </VerticalStackLayout>
+
+            <!-- Auth Token (read-only display) -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="AUTH TOKEN" FontFamily="Courier New" FontSize="10"
+                       TextColor="{StaticResource LudocText2}" CharacterSpacing="1"/>
+                <Label Text="{x:Static local:AppConfig.AuthToken}"
+                       FontFamily="Courier New" FontSize="11"
+                       TextColor="{StaticResource LudocDim}"
+                       BackgroundColor="#0D0F12"
+                       Padding="12,10"/>
+            </VerticalStackLayout>
+
+            <!-- Test Connection -->
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16">
+                <Button Grid.Column="0"
+                        Text="TEST CONNECTION"
+                        Command="{Binding TestConnectionCommand}"
+                        IsEnabled="{Binding IsTesting, Converter={StaticResource InvertedBoolConverter}}"
+                        FontFamily="Courier New" FontSize="11"
+                        BackgroundColor="{StaticResource LudocGreen}"
+                        TextColor="#000"
+                        CornerRadius="0"
+                        Padding="16,10"/>
+
+                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                    <Label Text="STATUS" FontFamily="Courier New" FontSize="9"
+                           TextColor="{StaticResource LudocDim}" CharacterSpacing="1"/>
+                    <Label Text="{Binding ConnectionStatus}"
+                           FontFamily="Courier New" FontSize="12"
+                           TextColor="{Binding ConnectionOnline, Converter={StaticResource OnlineColorConverter}}"/>
+                </VerticalStackLayout>
+            </Grid>
+
+            <BoxView HeightRequest="1" Color="{StaticResource LudocBorder}" Margin="0,8"/>
+
+            <Label Text="BUILD INFO" FontFamily="Courier New" FontSize="9"
+                   TextColor="{StaticResource LudocDim}" CharacterSpacing="2"/>
+            <Label Text="LUDOC OS GUI  •  net10.0-windows  •  MAUI 10.0.41"
+                   FontFamily="Courier New" FontSize="10"
+                   TextColor="{StaticResource LudocDim}"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

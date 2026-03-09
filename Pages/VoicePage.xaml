@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:primeiroApp.Models"
+             x:Class="primeiroApp.Pages.VoicePage"
+             BackgroundColor="{StaticResource LudocBg}"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto, *, Auto, Auto" Padding="20">
+
+        <!-- Row 0: Header -->
+        <HorizontalStackLayout Grid.Row="0" Spacing="10" HorizontalOptions="Center">
+            <BoxView WidthRequest="8" HeightRequest="8" CornerRadius="4" VerticalOptions="Center"
+                     Color="{Binding IsRecording, Converter={StaticResource VoiceButtonColorConverter}}"/>
+            <Label Text="SENSORIAL INPUT: ACTIVE" FontFamily="Courier New" FontSize="10"
+                   TextColor="{StaticResource LudocDim}" VerticalOptions="Center"/>
+        </HorizontalStackLayout>
+
+        <!-- Row 1: Botão central + transcrição ao vivo -->
+        <Grid Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Center">
+
+            <!-- Círculo pulsante -->
+            <Ellipse WidthRequest="200" HeightRequest="200" Stroke="{StaticResource LudocGreen}"
+                     StrokeThickness="1" Opacity="0.2">
+                <Ellipse.Triggers>
+                    <DataTrigger TargetType="Ellipse" Binding="{Binding IsRecording}" Value="True">
+                        <Setter Property="Stroke" Value="#FF3355"/>
+                        <Setter Property="Opacity" Value="0.8"/>
+                    </DataTrigger>
+                </Ellipse.Triggers>
+            </Ellipse>
+
+            <!-- Ícone e status -->
+            <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="5" WidthRequest="180">
+                <Label Text="🎙️" FontSize="48" HorizontalOptions="Center"/>
+                <Label Text="{Binding StatusText}"
+                       FontFamily="Courier New" FontSize="13"
+                       TextColor="{StaticResource LudocGreen}"
+                       HorizontalOptions="Center"
+                       FontAttributes="Bold"
+                       LineBreakMode="TailTruncation"/>
+            </VerticalStackLayout>
+
+            <!-- Botão invisível de interação -->
+            <Button WidthRequest="250" HeightRequest="250"
+                    BackgroundColor="Transparent" BorderColor="Transparent"
+                    CornerRadius="125"
+                    Command="{Binding ToggleRecordCommand}"/>
+        </Grid>
+
+        <!-- Row 2: Tasks ativas -->
+        <Grid Grid.Row="2" HeightRequest="110" Margin="0,10,0,0">
+            <BoxView Color="#0D0F12" CornerRadius="4" Opacity="0.6"/>
+            <VerticalStackLayout Margin="10,6">
+                <Label Text="TASKS ATIVAS" FontFamily="Courier New" FontSize="9"
+                       TextColor="{StaticResource LudocDim}" CharacterSpacing="2" Margin="0,0,0,4"/>
+                <CollectionView ItemsSource="{Binding ActiveTasks}" SelectionMode="None" HeightRequest="70">
+                    <CollectionView.EmptyView>
+                        <Label Text="— nenhuma task em execução —" FontFamily="Courier New" FontSize="10"
+                               TextColor="{StaticResource LudocDim}" HorizontalOptions="Center"/>
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:LudocTask">
+                            <Label FontFamily="Courier New" FontSize="10"
+                                   TextColor="{StaticResource LudocText2}" Margin="0,1">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="⏳ " TextColor="#FFB800"/>
+                                        <Span Text="{Binding ShortQuery}"/>
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+        </Grid>
+
+        <!-- Row 3: Journal ao vivo -->
+        <Grid Grid.Row="3" HeightRequest="160" Margin="0,8,0,0">
+            <BoxView Color="#0D0F12" CornerRadius="4" Opacity="0.6"/>
+            <VerticalStackLayout Margin="10,6">
+                <Label Text="JOURNAL" FontFamily="Courier New" FontSize="9"
+                       TextColor="{StaticResource LudocDim}" CharacterSpacing="2" Margin="0,0,0,4"/>
+                <CollectionView ItemsSource="{Binding JournalEntries}" SelectionMode="None" HeightRequest="120">
+                    <CollectionView.EmptyView>
+                        <Label Text="— aguardando atividade dos agentes —" FontFamily="Courier New" FontSize="10"
+                               TextColor="{StaticResource LudocDim}" HorizontalOptions="Center"/>
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:JournalEntry">
+                            <Label FontFamily="Courier New" FontSize="10"
+                                   TextColor="{StaticResource LudocText2}" Margin="0,1">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{Binding ShortAgent}" TextColor="{StaticResource LudocGreen}"/>
+                                        <Span Text=" → "/>
+                                        <Span Text="{Binding ShortTarget}"/>
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+        </Grid>
+
+    </Grid>
+</ContentPage>
