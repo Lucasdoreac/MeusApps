@@ -2,30 +2,25 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "build: windows (audit)",
+      "label": "LUDOC: Audit Build",
       "type": "shell",
-      "command": "bash scripts/ci.sh",
+      "command": "/c/Users/ludoc/Projects/primeiroApp/scripts/ci.sh",
       "group": { "kind": "build", "isDefault": true },
-      "presentation": { "reveal": "always", "panel": "shared" },
-      "problemMatcher": "$msCompile"
+      "problemMatcher": []
     },
     {
-      "label": "build: windows (fast)",
+      "label": "LUDOC: Fast Build",
       "type": "shell",
-      "command": "bash scripts/ci.sh --fast",
-      "group": "build"
+      "command": "/c/Users/ludoc/Projects/primeiroApp/scripts/ci.sh --fast",
+      "group": "build",
+      "problemMatcher": []
     },
     {
-      "label": "build: android",
+      "label": "LUDOC: Android Build",
       "type": "shell",
-      "command": "bash scripts/ci.sh --target android",
-      "group": "build"
-    },
-    {
-      "label": "run: windows",
-      "type": "shell",
-      "command": "dotnet run --project primeiroApp.csproj -f net10.0-windows10.0.19041.0",
-      "group": "test"
+      "command": "/c/Users/ludoc/Projects/primeiroApp/scripts/ci.sh --android",
+      "group": "build",
+      "problemMatcher": []
     }
   ]
 }
