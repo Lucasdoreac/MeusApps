@@ -1,6 +1,6 @@
-using primeiroApp.ViewModels;
+using matrix.ViewModels;
 
-namespace primeiroApp.Pages;
+namespace matrix.Pages;
 
 public partial class ChatPage : ContentPage
 {

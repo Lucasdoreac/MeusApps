@@ -1,6 +1,6 @@
-﻿using Foundation;
+using Foundation;
 
-namespace primeiroApp;
+namespace matrix;
 
 [Register("AppDelegate")]
 public class AppDelegate : MauiUIApplicationDelegate

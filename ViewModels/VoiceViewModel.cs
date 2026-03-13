@@ -1,14 +1,14 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using primeiroApp.Models;
-using primeiroApp.Services;
+using matrix.Models;
+using matrix.Services;
 
 #if WINDOWS
 using Windows.Media.SpeechRecognition;
 #endif
 
-namespace primeiroApp.ViewModels;
+namespace matrix.ViewModels;
 
 public partial class VoiceViewModel : ObservableObject
 {
@@ -18,10 +18,10 @@ public partial class VoiceViewModel : ObservableObject
     public ObservableCollection<LudocTask> ActiveTasks { get; } = [];
     public ObservableCollection<JournalEntry> JournalEntries { get; } = [];
 
-    [ObservableProperty] private bool isRecording = false;
-    [ObservableProperty] private bool isProcessing = false;
-    [ObservableProperty] private string statusText = "Aguardando...";
-    [ObservableProperty] private string liveTranscription = "";
+    [ObservableProperty] private bool _isRecording;
+    [ObservableProperty] private bool _isProcessing;
+    [ObservableProperty] private string _statusText;
+    [ObservableProperty] private string _liveTranscription;
 
     private CancellationTokenSource? _pollCts;
 
@@ -33,6 +33,10 @@ public partial class VoiceViewModel : ObservableObject
     {
         _api = api;
         _dispatcher = dispatcher;
+        _isRecording = false;
+        _isProcessing = false;
+        _statusText = "Aguardando...";
+        _liveTranscription = "";
     }
 
     // ── Polling ───────────────────────────────────────────────

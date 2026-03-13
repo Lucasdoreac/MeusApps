@@ -4,21 +4,21 @@
     {
       "label": "LUDOC: Audit Build",
       "type": "shell",
-      "command": "/c/Users/ludoc/Projects/primeiroApp/scripts/ci.sh",
+      "command": "/c/Users/ludoc/Projects/matrix/scripts/ci.sh",
       "group": { "kind": "build", "isDefault": true },
       "problemMatcher": []
     },
     {
       "label": "LUDOC: Fast Build",
       "type": "shell",
-      "command": "/c/Users/ludoc/Projects/primeiroApp/scripts/ci.sh --fast",
+      "command": "/c/Users/ludoc/Projects/matrix/scripts/ci.sh --fast",
       "group": "build",
       "problemMatcher": []
     },
     {
       "label": "LUDOC: Android Build",
       "type": "shell",
-      "command": "/c/Users/ludoc/Projects/primeiroApp/scripts/ci.sh --android",
+      "command": "/c/Users/ludoc/Projects/matrix/scripts/ci.sh --android",
       "group": "build",
       "problemMatcher": []
     }

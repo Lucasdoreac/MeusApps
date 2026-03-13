@@ -1,15 +1,16 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using primeiroApp.Models;
-using primeiroApp.Services;
+using matrix.Models;
+using matrix.Services;
 
-namespace primeiroApp.ViewModels;
+namespace matrix.ViewModels;
 
 public partial class DashboardViewModel : ObservableObject, IDisposable
 {
     private readonly LudocApiService _api;
     private readonly IDispatcher _dispatcher;
+    private readonly LudocSseService _sse;
     private System.Timers.Timer? _timer;
     private int _tickCount = 0;
 
@@ -17,10 +18,12 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
     public ObservableCollection<JournalEntry> Journal { get; } = [];
     public ObservableCollection<ProcessInfo> TopProcesses { get; } = [];
     public ObservableCollection<SystemAlert> Alerts { get; } = [];
+    public ObservableCollection<Recommendation> Recommendations { get; } = [];
 
-    [ObservableProperty] private TelemetryData telemetry = new();
-    [ObservableProperty] private bool serverOnline = false;
-    [ObservableProperty] private int activeTaskCount = 0;
+    [ObservableProperty] private TelemetryData _telemetry;
+    [ObservableProperty] private bool _serverOnline;
+    [ObservableProperty] private int _activeTaskCount;
+    [ObservableProperty] private bool _hasRecommendations;
 
     // Computed disk display
     public string DiskLabel => $"{Telemetry.Disk.UsedGb:F0}/{Telemetry.Disk.TotalGb:F0} GB";
@@ -28,11 +31,40 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
         ? Math.Min(1.0, Telemetry.Disk.UsedGb / Telemetry.Disk.TotalGb) : 0;
     public string PagefileLabel => Telemetry.PagefileMb > 0 ? $"{Telemetry.PagefileMb} MB" : "--";
 
-    public DashboardViewModel(LudocApiService api, IDispatcher dispatcher)
+    public DashboardViewModel(LudocApiService api, IDispatcher dispatcher, LudocSseService sse)
     {
         _api = api;
         _dispatcher = dispatcher;
+        _sse = sse;
+        _telemetry = new TelemetryData();
+        _serverOnline = false;
+        _activeTaskCount = 0;
+        _hasRecommendations = false;
+        _sse.EventReceived += OnSseEvent;
         StartPolling();
+    }
+
+    private void OnSseEvent(SseJournalEvent e)
+    {
+        _dispatcher.Dispatch(() =>
+        {
+            Journal.Insert(0, new JournalEntry
+            {
+                Id     = e.Id,
+                Agent  = e.Agent,
+                Action = e.Action,
+                Target = e.Target,
+                Detail = e.Detail,
+                Timestamp = e.Timestamp
+            });
+            if (Journal.Count > 30) Journal.RemoveAt(Journal.Count - 1);
+        });
+    }
+
+    [RelayCommand]
+    public async Task RunRecommendationAsync(Recommendation rec)
+    {
+        await _api.McpDispatchAsync("system.optimize", new { action = rec.Action });
     }
 
     private void StartPolling()
@@ -76,6 +108,10 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
 
                 Alerts.Clear();
                 foreach (var a in health.Alerts) Alerts.Add(a);
+
+                Recommendations.Clear();
+                foreach (var r in health.Recommendations) Recommendations.Add(r);
+                HasRecommendations = Recommendations.Count > 0;
             }
 
             Tasks.Clear();
@@ -89,6 +125,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
 
     public void Dispose()
     {
+        _sse.EventReceived -= OnSseEvent;
         _timer?.Stop();
         _timer?.Dispose();
     }

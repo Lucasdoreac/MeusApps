@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:matrix.ViewModels"
+    xmlns:models="clr-namespace:matrix.Models"
+    x:Class="matrix.Pages.FactsPage"
+    BackgroundColor="{StaticResource LudocBg}"
+    Shell.NavBarIsVisible="False">
+
+    <VerticalStackLayout Spacing="0">
+
+        <!-- ══ HEADER / BUSCA ══════════════════════════════════════ -->
+        <Grid ColumnDefinitions="*,44" Padding="12,12,12,6" ColumnSpacing="6">
+            <Label Grid.Column="0" Text="KNOWLEDGE GRAPH"
+                   FontFamily="Courier New" FontSize="9"
+                   TextColor="{StaticResource LudocDim}" CharacterSpacing="2"
+                   VerticalOptions="Center"/>
+            <Button Grid.Column="1" Text="+"
+                    Command="{Binding ToggleAddCommand}"
+                    FontFamily="Courier New" FontSize="18"
+                    BackgroundColor="{StaticResource LudocBorder}"
+                    TextColor="{StaticResource LudocGreen}"
+                    CornerRadius="2" Padding="0" HeightRequest="36"/>
+        </Grid>
+        <BoxView HeightRequest="1" Color="{StaticResource LudocBorder}"/>
+
+        <!-- Barra de busca -->
+        <Grid ColumnDefinitions="*,70" Padding="12,8" ColumnSpacing="8">
+            <Entry Grid.Column="0"
+                   Placeholder="buscar fatos..."
+                   Text="{Binding SearchQuery}"
+                   FontFamily="Courier New" FontSize="12"
+                   TextColor="{StaticResource LudocText}"
+                   PlaceholderColor="{StaticResource LudocDim}"
+                   BackgroundColor="{StaticResource LudocBg1}"
+                   ReturnCommand="{Binding SearchCommand}"/>
+            <Button Grid.Column="1" Text="SEARCH"
+                    Command="{Binding SearchCommand}"
+                    FontFamily="Courier New" FontSize="9"
+                    BackgroundColor="{StaticResource LudocBorder}"
+                    TextColor="{StaticResource LudocBlue}"
+                    CornerRadius="2"/>
+        </Grid>
+
+        <!-- Painel novo fato (colapsável) -->
+        <VerticalStackLayout IsVisible="{Binding IsAddVisible}"
+                             Padding="12,0,12,8" Spacing="6">
+            <BoxView HeightRequest="1" Color="{StaticResource LudocBorder}"/>
+            <Entry Placeholder="chave (ex: voice.endpoint)"
+                   Text="{Binding NewKey}"
+                   FontFamily="Courier New" FontSize="11"
+                   TextColor="{StaticResource LudocText}"
+                   PlaceholderColor="{StaticResource LudocDim}"
+                   BackgroundColor="{StaticResource LudocBg1}"/>
+            <Entry Placeholder="valor"
+                   Text="{Binding NewValue}"
+                   FontFamily="Courier New" FontSize="11"
+                   TextColor="{StaticResource LudocText}"
+                   PlaceholderColor="{StaticResource LudocDim}"
+                   BackgroundColor="{StaticResource LudocBg1}"/>
+            <Button Text="GRAVAR"
+                    Command="{Binding RecordCommand}"
+                    FontFamily="Courier New" FontSize="10"
+                    BackgroundColor="{StaticResource LudocGreen}"
+                    TextColor="{StaticResource LudocBg}"
+                    CornerRadius="2" HeightRequest="38"/>
+        </VerticalStackLayout>
+
+        <!-- Status -->
+        <Label Text="{Binding StatusText}"
+               IsVisible="{Binding StatusText, Converter={StaticResource StringNotEmptyConverter}}"
+               FontFamily="Courier New" FontSize="9"
+               TextColor="{StaticResource LudocDim}"
+               Margin="12,0,12,4"/>
+
+        <BoxView HeightRequest="1" Color="{StaticResource LudocBorder}"/>
+
+        <!-- ══ LISTA DE FATOS ════════════════════════════════════ -->
+        <CollectionView ItemsSource="{Binding Facts}">
+            <CollectionView.EmptyView>
+                <Label Text="nenhum fato. toque + para registrar."
+                       FontFamily="Courier New" FontSize="11"
+                       TextColor="{StaticResource LudocDim}"
+                       HorizontalOptions="Center" Margin="0,24"/>
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:FactEntry">
+                    <VerticalStackLayout Padding="12,10" Spacing="2">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Grid.Column="0" Text="{Binding ShortKey}"
+                                   FontFamily="Courier New" FontSize="12" FontAttributes="Bold"
+                                   TextColor="{StaticResource LudocText}"/>
+                            <Label Grid.Column="1" Text="{Binding Source}"
+                                   FontFamily="Courier New" FontSize="9"
+                                   TextColor="{StaticResource LudocDim}"
+                                   VerticalOptions="Center"/>
+                        </Grid>
+                        <Label Text="{Binding ShortValue}"
+                               FontFamily="Courier New" FontSize="11"
+                               TextColor="{StaticResource LudocText2}"
+                               LineBreakMode="WordWrap"/>
+                        <BoxView HeightRequest="1" Color="{StaticResource LudocBorder}" Margin="0,6,0,0"/>
+                    </VerticalStackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+    </VerticalStackLayout>
+</ContentPage>

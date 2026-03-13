@@ -2,9 +2,9 @@ using matrix.ViewModels;
 
 namespace matrix.Pages;
 
-public partial class SettingsPage : ContentPage
+public partial class FactsPage : ContentPage
 {
-    public SettingsPage(SettingsViewModel vm)
+    public FactsPage(FactsViewModel vm)
     {
         InitializeComponent();
         BindingContext = vm;

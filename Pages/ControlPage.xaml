@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:vm="clr-namespace:matrix.ViewModels"
+    xmlns:models="clr-namespace:matrix.Models"
+    x:Class="matrix.Pages.ControlPage"
+    BackgroundColor="{StaticResource LudocBg}"
+    Shell.NavBarIsVisible="False">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="0">
+
+            <!-- ══ WORKFLOWS ══════════════════════════════════════════ -->
+            <Label Text="WORKFLOWS"
+                   FontFamily="Courier New" FontSize="9"
+                   TextColor="{StaticResource LudocDim}"
+                   Margin="12,12,12,6" CharacterSpacing="2"/>
+            <BoxView HeightRequest="1" Color="{StaticResource LudocBorder}"/>
+
+            <VerticalStackLayout Padding="12,10" Spacing="8">
+                <Picker ItemsSource="{Binding Workflows}"
+                        SelectedItem="{Binding SelectedWorkflow}"
+                        FontFamily="Courier New" FontSize="12"
+                        TextColor="{StaticResource LudocText}"
+                        BackgroundColor="{StaticResource LudocBg1}"
+                        TitleColor="{StaticResource LudocDim}"/>
+
+                <Button Text="▶ RUN WORKFLOW"
+                        Command="{Binding RunWorkflowCommand}"
+                        IsEnabled="{Binding IsRunning, Converter={StaticResource InverseBoolConverter}}"
+                        FontFamily="Courier New" FontSize="11"
+                        BackgroundColor="{StaticResource LudocGreen}"
+                        TextColor="{StaticResource LudocBg}"
+                        CornerRadius="2" HeightRequest="40"/>
+
+                <Label Text="{Binding WorkflowStatus}"
+                       FontFamily="Courier New" FontSize="11"
+                       TextColor="{StaticResource LudocAmber}"
+                       IsVisible="{Binding WorkflowStatus, Converter={StaticResource StringNotEmptyConverter}}"/>
+            </VerticalStackLayout>
+
+            <CollectionView ItemsSource="{Binding LastSteps}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:WorkflowStepResult">
+                        <Grid ColumnDefinitions="12,*,60" Padding="12,6" ColumnSpacing="8">
+                            <BoxView Grid.Column="0" WidthRequest="6" HeightRequest="6"
+                                     CornerRadius="3" VerticalOptions="Center"
+                                     Color="{Binding Status, Converter={StaticResource TaskStatusColorConverter}}"/>
+                            <Label Grid.Column="1" Text="{Binding StepType}"
+                                   FontFamily="Courier New" FontSize="10"
+                                   TextColor="{StaticResource LudocText2}"/>
+                            <Label Grid.Column="2" Text="{Binding Status}"
+                                   FontFamily="Courier New" FontSize="9"
+                                   TextColor="{StaticResource LudocDim}"
+                                   HorizontalTextAlignment="End"/>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- ══ AÇÕES RÁPIDAS ════════════════════════════════════ -->
+            <Label Text="AÇÕES RÁPIDAS"
+                   FontFamily="Courier New" FontSize="9"
+                   TextColor="{StaticResource LudocDim}"
+                   Margin="12,12,12,6" CharacterSpacing="2"/>
+            <BoxView HeightRequest="1" Color="{StaticResource LudocBorder}"/>
+
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto"
+                  Padding="12,10" ColumnSpacing="8" RowSpacing="8">
+                <Button Grid.Row="0" Grid.Column="0" Text="OPTIMIZE"
+                        Command="{Binding DispatchOptimizeCommand}"
+                        FontFamily="Courier New" FontSize="10"
+                        BackgroundColor="{StaticResource LudocBorder}"
+                        TextColor="{StaticResource LudocGreen}"
+                        CornerRadius="2" HeightRequest="44"/>
+                <Button Grid.Row="0" Grid.Column="1" Text="RESUME"
+                        Command="{Binding DispatchResumeCommand}"
+                        FontFamily="Courier New" FontSize="10"
+                        BackgroundColor="{StaticResource LudocBorder}"
+                        TextColor="{StaticResource LudocBlue}"
+                        CornerRadius="2" HeightRequest="44"/>
+                <Button Grid.Row="1" Grid.Column="0" Text="CLEANUP"
+                        Command="{Binding DispatchCleanupCommand}"
+                        FontFamily="Courier New" FontSize="10"
+                        BackgroundColor="{StaticResource LudocBorder}"
+                        TextColor="{StaticResource LudocAmber}"
+                        CornerRadius="2" HeightRequest="44"/>
+                <Button Grid.Row="1" Grid.Column="1" Text="🎤 VOICE"
+                        Command="{Binding OpenVoiceCommand}"
+                        FontFamily="Courier New" FontSize="10"
+                        BackgroundColor="{StaticResource LudocBorder}"
+                        TextColor="{StaticResource LudocText}"
+                        CornerRadius="2" HeightRequest="44"/>
+            </Grid>
+
+            <!-- ══ COORDINATOR ══════════════════════════════════════ -->
+            <Grid ColumnDefinitions="*,Auto" Padding="12,12,12,6">
+                <Label Grid.Column="0" Text="COORDINATOR"
+                       FontFamily="Courier New" FontSize="9"
+                       TextColor="{StaticResource LudocDim}" CharacterSpacing="2"/>
+                <Button Grid.Column="1" Text="↺"
+                        Command="{Binding RefreshCoordinatorCommand}"
+                        FontFamily="Courier New" FontSize="12"
+                        BackgroundColor="Transparent"
+                        TextColor="{StaticResource LudocDim}"
+                        Padding="8,2"/>
+            </Grid>
+            <BoxView HeightRequest="1" Color="{StaticResource LudocBorder}"/>
+
+            <Grid ColumnDefinitions="*,*" Padding="12,8" ColumnSpacing="12">
+                <VerticalStackLayout Grid.Column="0">
+                    <Label Text="LOCKS ATIVOS"
+                           FontFamily="Courier New" FontSize="9"
+                           TextColor="{StaticResource LudocDim}"/>
+                    <Label Text="{Binding ActiveLocks.Count}"
+                           FontFamily="Courier New" FontSize="22"
+                           TextColor="{StaticResource LudocRed}"/>
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Column="1">
+                    <Label Text="TASKS RECENTES"
+                           FontFamily="Courier New" FontSize="9"
+                           TextColor="{StaticResource LudocDim}"/>
+                    <Label Text="{Binding RecentTaskCount}"
+                           FontFamily="Courier New" FontSize="22"
+                           TextColor="{StaticResource LudocText2}"/>
+                </VerticalStackLayout>
+            </Grid>
+
+            <CollectionView ItemsSource="{Binding ActiveLocks}">
+                <CollectionView.EmptyView>
+                    <Label Text="nenhum lock ativo"
+                           FontFamily="Courier New" FontSize="10"
+                           TextColor="{StaticResource LudocDim}"
+                           HorizontalOptions="Center" Margin="0,8"/>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:CoordinatorLock">
+                        <Grid ColumnDefinitions="*,Auto" Padding="12,6" ColumnSpacing="8">
+                            <VerticalStackLayout Grid.Column="0">
+                                <Label Text="{Binding ShortPath}"
+                                       FontFamily="Courier New" FontSize="11"
+                                       TextColor="{StaticResource LudocText2}"/>
+                                <Label Text="{Binding AgentId}"
+                                       FontFamily="Courier New" FontSize="9"
+                                       TextColor="{StaticResource LudocDim}"/>
+                            </VerticalStackLayout>
+                            <Label Grid.Column="1" Text="{Binding Operation}"
+                                   FontFamily="Courier New" FontSize="10"
+                                   TextColor="{StaticResource LudocAmber}"
+                                   VerticalOptions="Center"/>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- ══ LIVE FEED ════════════════════════════════════════ -->
+            <Label Text="LIVE FEED"
+                   FontFamily="Courier New" FontSize="9"
+                   TextColor="{StaticResource LudocDim}"
+                   Margin="12,12,12,6" CharacterSpacing="2"/>
+            <BoxView HeightRequest="1" Color="{StaticResource LudocBorder}"/>
+
+            <CollectionView ItemsSource="{Binding LiveFeed}">
+                <CollectionView.EmptyView>
+                    <Label Text="aguardando eventos SSE..."
+                           FontFamily="Courier New" FontSize="10"
+                           TextColor="{StaticResource LudocDim}"
+                           HorizontalOptions="Center" Margin="0,12"/>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:SseJournalEvent">
+                        <Grid ColumnDefinitions="90,Auto,*" Padding="12,5" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="{Binding Agent}"
+                                   FontFamily="Courier New" FontSize="10"
+                                   TextColor="{StaticResource LudocDim}"
+                                   LineBreakMode="TailTruncation"/>
+                            <Label Grid.Column="1" Text="{Binding Action}"
+                                   FontFamily="Courier New" FontSize="10"
+                                   TextColor="{StaticResource LudocGreen}"/>
+                            <Label Grid.Column="2" Text="{Binding Target}"
+                                   FontFamily="Courier New" FontSize="10"
+                                   TextColor="{StaticResource LudocText2}"
+                                   LineBreakMode="TailTruncation"/>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <BoxView HeightRequest="20" Color="Transparent"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

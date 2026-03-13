@@ -1,4 +1,4 @@
-﻿namespace primeiroApp;
+namespace matrix;
 
 public partial class AppShell : Shell
 {

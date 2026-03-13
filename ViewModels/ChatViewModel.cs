@@ -1,10 +1,10 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using primeiroApp.Models;
-using primeiroApp.Services;
+using matrix.Models;
+using matrix.Services;
 
-namespace primeiroApp.ViewModels;
+namespace matrix.ViewModels;
 
 public partial class ChatViewModel : ObservableObject
 {
@@ -12,14 +12,18 @@ public partial class ChatViewModel : ObservableObject
 
     public ObservableCollection<ChatMessage> Messages { get; } = [];
 
-    [ObservableProperty] private string inputText = "";
-    [ObservableProperty] private bool isClaudeActive = true;
-    [ObservableProperty] private bool isLoading = false;
-    [ObservableProperty] private string statusText = "ready";
+    [ObservableProperty] private string _inputText = "";
+    [ObservableProperty] private bool _isClaudeActive = true;
+    [ObservableProperty] private bool _isLoading = false;
+    [ObservableProperty] private string _statusText = "ready";
 
     public ChatViewModel(LudocApiService api)
     {
         _api = api;
+        InputText = "";
+        IsClaudeActive = true;
+        IsLoading = false;
+        StatusText = "ready";
         AddMessage(MessageSender.System, "LUDOC OS interface ready. Select agent and type a command.");
     }
 

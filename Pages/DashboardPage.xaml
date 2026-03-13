@@ -2,9 +2,9 @@
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:vm="clr-namespace:primeiroApp.ViewModels"
-    xmlns:models="clr-namespace:primeiroApp.Models"
-    x:Class="primeiroApp.Pages.DashboardPage"
+    xmlns:vm="clr-namespace:matrix.ViewModels"
+    xmlns:models="clr-namespace:matrix.Models"
+    x:Class="matrix.Pages.DashboardPage"
     BackgroundColor="{StaticResource LudocBg}"
     Shell.NavBarIsVisible="False">
 
@@ -127,6 +127,40 @@
                                    FontFamily="Courier New" FontSize="11"
                                    TextColor="{Binding LevelColor}"
                                    LineBreakMode="WordWrap"/>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- ══ RECOMENDAÇÕES ════════════════════════════════════ -->
+            <Label Text="RECOMENDAÇÕES"
+                   FontFamily="Courier New" FontSize="9"
+                   TextColor="{StaticResource LudocDim}"
+                   Margin="12,12,12,6" CharacterSpacing="2"
+                   IsVisible="{Binding HasRecommendations}"/>
+            <BoxView HeightRequest="1" Color="{StaticResource LudocBorder}"
+                     IsVisible="{Binding HasRecommendations}"/>
+
+            <CollectionView ItemsSource="{Binding Recommendations}"
+                            IsVisible="{Binding HasRecommendations}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Recommendation">
+                        <Grid ColumnDefinitions="*,60,90" Padding="12,8" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="{Binding Label}"
+                                   FontFamily="Courier New" FontSize="11"
+                                   TextColor="{StaticResource LudocText2}"
+                                   LineBreakMode="TailTruncation"/>
+                            <Label Grid.Column="1" Text="{Binding ImpactLabel}"
+                                   FontFamily="Courier New" FontSize="10"
+                                   TextColor="{StaticResource LudocAmber}"
+                                   HorizontalTextAlignment="End"/>
+                            <Button Grid.Column="2" Text="EXECUTAR"
+                                    FontFamily="Courier New" FontSize="9"
+                                    BackgroundColor="{StaticResource LudocBorder}"
+                                    TextColor="{StaticResource LudocGreen}"
+                                    CornerRadius="2" Padding="6,4"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.RunRecommendationCommand}"
+                                    CommandParameter="{Binding .}"/>
                         </Grid>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>

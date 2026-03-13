@@ -2,9 +2,9 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using primeiroApp.Models;
+using matrix.Models;
 
-namespace primeiroApp.Services;
+namespace matrix.Services;
 
 public class LudocApiService
 {
@@ -15,9 +15,11 @@ public class LudocApiService
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
     };
 
-    public LudocApiService()
+    public LudocApiService() : this(new HttpClient { Timeout = TimeSpan.FromSeconds(90) }) { }
+
+    public LudocApiService(HttpClient httpClient)
     {
-        _http = new HttpClient { Timeout = TimeSpan.FromSeconds(90) };
+        _http = httpClient;
     }
 
     private string Base => AppConfig.ServerBase;
@@ -102,6 +104,20 @@ public class LudocApiService
             }
             if (root.TryGetProperty("latest_voice_id", out var vid))
                 data.LatestVoiceId = vid.GetString() ?? "init";
+
+            if (root.TryGetProperty("recommendations", out var recs) && recs.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var r in recs.EnumerateArray())
+                {
+                    data.Recommendations.Add(new Recommendation
+                    {
+                        Action   = r.TryGetProperty("action",    out var ra) ? ra.GetString() ?? "" : "",
+                        Label    = r.TryGetProperty("label",     out var rl) ? rl.GetString() ?? "" : "",
+                        ImpactMb = r.TryGetProperty("impact_mb", out var ri) ? ri.GetInt32() : 0,
+                        Priority = r.TryGetProperty("priority",  out var rp) ? rp.GetInt32() : 0
+                    });
+                }
+            }
 
             return data;
         }
@@ -220,6 +236,151 @@ public class LudocApiService
 
             return JsonSerializer.Deserialize<VoiceInputResponse>(
                 await res.Content.ReadAsStringAsync(), _json);
+        }
+        catch { return null; }
+    }
+
+    // ── Facts ──────────────────────────────────────────────────────────────────
+
+    public async Task<List<FactEntry>> GetFactsAsync(int limit = 20)
+    {
+        try
+        {
+            using var req = Req(HttpMethod.Get, $"/facts?limit={limit}");
+            using var res = await _http.SendAsync(req);
+            if (!res.IsSuccessStatusCode) return [];
+            using var doc = JsonDocument.Parse(await res.Content.ReadAsStringAsync());
+            var root = doc.RootElement;
+            // Response may be array or { facts: [...] }
+            var arr = root.ValueKind == JsonValueKind.Array ? root
+                : root.TryGetProperty("facts", out var f) ? f : root;
+            return JsonSerializer.Deserialize<List<FactEntry>>(arr.GetRawText(), _json) ?? [];
+        }
+        catch { return []; }
+    }
+
+    public async Task<FactSearchResult?> SearchFactsAsync(string q, int limit = 10)
+    {
+        try
+        {
+            using var req = Req(HttpMethod.Get, $"/facts/search?q={Uri.EscapeDataString(q)}&limit={limit}");
+            using var res = await _http.SendAsync(req);
+            if (!res.IsSuccessStatusCode) return null;
+            return JsonSerializer.Deserialize<FactSearchResult>(
+                await res.Content.ReadAsStringAsync(), _json);
+        }
+        catch { return null; }
+    }
+
+    public async Task<(string? id, bool ok)> RecordFactAsync(string key, string value,
+        string source = "ludoc-ui", string[]? tags = null)
+    {
+        try
+        {
+            using var req = Req(HttpMethod.Post, "/facts");
+            req.Content = Json(new { key, value, source, tags = tags ?? [] });
+            using var res = await _http.SendAsync(req);
+            if (!res.IsSuccessStatusCode) return (null, false);
+            using var doc = JsonDocument.Parse(await res.Content.ReadAsStringAsync());
+            var id = doc.RootElement.TryGetProperty("id", out var i) ? i.GetString() : null;
+            return (id, true);
+        }
+        catch { return (null, false); }
+    }
+
+    // ── MCP Dispatch ───────────────────────────────────────────────────────────
+
+    public async Task<string?> AskLlamaAsync(string query)
+    {
+        using var req = Req(HttpMethod.Post, "/ask/llama");
+        req.Content = Json(new { query });
+        using var res = await _http.SendAsync(req);
+        return await res.Content.ReadAsStringAsync();
+    }
+
+    public async Task<McpDispatchResult?> McpDispatchAsync(string type,
+        object? payload = null, string source = "ludoc-ui")
+    {
+        try
+        {
+            using var req = Req(HttpMethod.Post, "/mcp/dispatch");
+            req.Content = Json(new { source, type, payload });
+            using var res = await _http.SendAsync(req);
+            if (!res.IsSuccessStatusCode) return null;
+            return JsonSerializer.Deserialize<McpDispatchResult>(
+                await res.Content.ReadAsStringAsync(), _json);
+        }
+        catch { return null; }
+    }
+
+    // ── Workflows ──────────────────────────────────────────────────────────────
+
+    public async Task<List<string>> ListWorkflowsAsync()
+    {
+        try
+        {
+            using var req = Req(HttpMethod.Get, "/mcp/workflows");
+            using var res = await _http.SendAsync(req);
+            if (!res.IsSuccessStatusCode) return [];
+            using var doc = JsonDocument.Parse(await res.Content.ReadAsStringAsync());
+            if (doc.RootElement.TryGetProperty("workflows", out var w))
+                return JsonSerializer.Deserialize<List<string>>(w.GetRawText(), _json) ?? [];
+            return [];
+        }
+        catch { return []; }
+    }
+
+    public async Task<WorkflowResult?> RunWorkflowAsync(string name, object? overrides = null)
+    {
+        try
+        {
+            using var req = Req(HttpMethod.Post, "/mcp/workflow");
+            req.Content = Json(new { workflow = name, overrides });
+            using var res = await _http.SendAsync(req);
+            if (!res.IsSuccessStatusCode) return null;
+            return JsonSerializer.Deserialize<WorkflowResult>(
+                await res.Content.ReadAsStringAsync(), _json);
+        }
+        catch { return null; }
+    }
+
+    // ── Coordinator ────────────────────────────────────────────────────────────
+
+    public async Task<CoordinatorStatus?> GetCoordinatorStatusAsync()
+    {
+        try
+        {
+            using var req = Req(HttpMethod.Get, "/coordinator/status");
+            using var res = await _http.SendAsync(req);
+            if (!res.IsSuccessStatusCode) return null;
+            return JsonSerializer.Deserialize<CoordinatorStatus>(
+                await res.Content.ReadAsStringAsync(), _json);
+        }
+        catch { return null; }
+    }
+
+    // ── Journal Append ─────────────────────────────────────────────────────────
+
+    public async Task AppendJournalAsync(string agent, string action,
+        string target, string? detail = null)
+    {
+        try
+        {
+            using var req = Req(HttpMethod.Post, "/journal/append");
+            req.Content = Json(new { agent, action, target, detail });
+            await _http.SendAsync(req);
+        }
+        catch { }
+    }
+
+    // ── SSE stream ────────────────────────────────────────────────────────────
+
+    public async Task<HttpResponseMessage?> OpenEventsStreamAsync(CancellationToken ct)
+    {
+        try
+        {
+            var req = Req(HttpMethod.Get, "/events");
+            return await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
         }
         catch { return null; }
     }

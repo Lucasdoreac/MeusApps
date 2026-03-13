@@ -1,9 +1,9 @@
-namespace primeiroApp;
+namespace matrix;
 
 public static class AppConfig
 {
     private const string ServerUrlKey = "ludoc_server_url";
-    private const string DefaultServerUrl = "http://192.168.0.5:9000";
+    private const string DefaultServerUrl = "http://localhost:9000";
 
     public static string ServerBase
     {

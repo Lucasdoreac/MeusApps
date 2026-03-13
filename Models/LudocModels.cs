@@ -1,4 +1,4 @@
-namespace primeiroApp.Models;
+namespace matrix.Models;
 
 // â”€â”€ Chat â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -122,4 +122,98 @@ public class TelemetryData
     public long PagefileMb { get; set; }
     public List<ProcessInfo> TopProcesses { get; set; } = [];
     public List<SystemAlert> Alerts { get; set; } = [];
+    public List<Recommendation> Recommendations { get; set; } = [];
+}
+
+// ── Recommendations ───────────────────────────────────────────────────────────
+
+public class Recommendation
+{
+    public string Action   { get; set; } = "";
+    public string Label    { get; set; } = "";
+    public int    ImpactMb { get; set; }
+    public int    Priority { get; set; }
+    public string ImpactLabel => ImpactMb > 0 ? $"~{ImpactMb}MB" : "";
+}
+
+// ── Facts / Knowledge Graph ────────────────────────────────────────────────────
+
+public class FactEntry
+{
+    public string Id { get; set; } = "";
+    public string Key { get; set; } = "";
+    public string Value { get; set; } = "";
+    public string Source { get; set; } = "";
+    public string Tags { get; set; } = "";
+    public long   UpdatedAt { get; set; }
+    public string ShortKey   => Key.Length   > 28 ? Key[..28]   + "…" : Key;
+    public string ShortValue => Value.Length > 55 ? Value[..55] + "…" : Value;
+}
+
+public class FactSearchResult
+{
+    public string          Query   { get; set; } = "";
+    public List<FactEntry> Results { get; set; } = [];
+    public int             Total   { get; set; }
+}
+
+// ── MCP Dispatch ──────────────────────────────────────────────────────────────
+
+public class McpDispatchResult
+{
+    public string  TaskId  { get; set; } = "";
+    public string  Status  { get; set; } = "";
+    public string? Message { get; set; }
+    public string? Error   { get; set; }
+}
+
+// ── Workflows ─────────────────────────────────────────────────────────────────
+
+public class WorkflowStepResult
+{
+    public string  StepId   { get; set; } = "";
+    public string  StepType { get; set; } = "";
+    public string  Status   { get; set; } = "";
+    public string? Error    { get; set; }
+}
+
+public class WorkflowResult
+{
+    public string                   WorkflowId     { get; set; } = "";
+    public string                   WorkflowName   { get; set; } = "";
+    public string                   Status         { get; set; } = "";
+    public int                      TotalSteps     { get; set; }
+    public int                      CompletedSteps { get; set; }
+    public List<WorkflowStepResult> Results        { get; set; } = [];
+    public long                     Timeline       { get; set; }
+    public string Summary => $"{CompletedSteps}/{TotalSteps} em {Timeline}ms";
+}
+
+// ── Coordinator ───────────────────────────────────────────────────────────────
+
+public class CoordinatorLock
+{
+    public string Path      { get; set; } = "";
+    public string AgentId   { get; set; } = "";
+    public string Operation { get; set; } = "";
+    public long   ExpiresAt { get; set; }
+    public string ShortPath => Path.Length > 30 ? "…" + Path[^27..] : Path;
+}
+
+public class CoordinatorStatus
+{
+    public List<CoordinatorLock> ActiveLocks { get; set; } = [];
+    public List<LudocTask>       RecentTasks { get; set; } = [];
+}
+
+// ── SSE Events ────────────────────────────────────────────────────────────────
+
+public class SseJournalEvent
+{
+    public string  Id        { get; set; } = "";
+    public string  Agent     { get; set; } = "";
+    public string  Action    { get; set; } = "";
+    public string  Target    { get; set; } = "";
+    public string? Detail    { get; set; }
+    public long    Timestamp { get; set; }
 }

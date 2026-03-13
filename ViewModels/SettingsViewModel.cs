@@ -1,21 +1,25 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using primeiroApp.Services;
+using matrix.Services;
 
-namespace primeiroApp.ViewModels;
+namespace matrix.ViewModels;
 
 public partial class SettingsViewModel : ObservableObject
 {
     private readonly LudocApiService _api;
 
-    [ObservableProperty] private string serverUrl = AppConfig.ServerBase;
-    [ObservableProperty] private string connectionStatus = "—";
-    [ObservableProperty] private bool connectionOnline = false;
-    [ObservableProperty] private bool isTesting = false;
+    [ObservableProperty] private string _serverUrl;
+    [ObservableProperty] private string _connectionStatus;
+    [ObservableProperty] private bool _connectionOnline;
+    [ObservableProperty] private bool _isTesting;
 
     public SettingsViewModel(LudocApiService api)
     {
         _api = api;
+        _serverUrl = AppConfig.ServerBase;
+        _connectionStatus = "—";
+        _connectionOnline = false;
+        _isTesting = false;
     }
 
     partial void OnServerUrlChanged(string value)

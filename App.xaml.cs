@@ -1,6 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace primeiroApp;
+namespace matrix;
 
 public partial class App : Application
 {

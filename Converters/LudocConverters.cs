@@ -1,7 +1,7 @@
 using System.Globalization;
-using primeiroApp.Models;
+using matrix.Models;
 
-namespace primeiroApp.Converters;
+namespace matrix.Converters;
 
 // Cor do label "WHO" no chat
 public class SenderColorConverter : IValueConverter
@@ -145,6 +145,21 @@ public class IntToBoolConverter : IValueConverter
 public class InvertedBoolConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) => value is not true;
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => throw new NotImplementedException();
+}
+
+// Alias used in ControlPage / FactsPage
+public class InverseBoolConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) => value is not true;
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => throw new NotImplementedException();
+}
+
+// string not null/empty → true
+public class StringNotEmptyConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        !string.IsNullOrEmpty(value?.ToString());
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => throw new NotImplementedException();
 }
 

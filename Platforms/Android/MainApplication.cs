@@ -1,7 +1,7 @@
-﻿using Android.App;
+using Android.App;
 using Android.Runtime;
 
-namespace primeiroApp;
+namespace matrix;
 
 [Application]
 public class MainApplication : MauiApplication
