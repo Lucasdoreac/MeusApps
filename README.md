@@ -1,6 +1,6 @@
 # LUDOC OS — Dashboard GUI
 
-Interface gráfica soberana do sistema LUDOC OS. App .NET MAUI Windows que conecta ao **context-server** local e exibe telemetria, tarefas de agentes e entrada de voz em tempo real.
+Interface soberana universal do ecossistema LUDOC OS. App .NET MAUI 10 multiplataforma (Android/APK, iOS/IPA, Windows, macOS) que conecta ao **context-server** local e exibe telemetria, tarefas de agentes e entrada de voz em tempo real.
 
 ## Stack
 
