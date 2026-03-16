@@ -1,6 +1,6 @@
 namespace matrix.Models;
 
-// â”€â”€ Chat â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -- Chat ------------------------------------------------------------------
 
 public enum MessageSender { User, Claude, Gemini, System }
 
@@ -19,7 +19,7 @@ public class ChatMessage
     };
 }
 
-// â”€â”€ Task Queue â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -- Task Queue ------------------------------------------------------------
 
 public class LudocTask
 {
@@ -33,11 +33,19 @@ public class LudocTask
     public long? StartedAt { get; set; }
     public long? CompletedAt { get; set; }
 
-    public string ShortQuery => Query.Length > 55 ? Query[..55] + "â€¦" : Query;
-    public string ShortId    => Id.Length > 16 ? Id[..16] : Id;
+    public string ShortQuery  => Query.Length  > 55 ? Query[..55]  + "..." : Query;
+    public string ShortId     => Id.Length     > 16 ? Id[..16]     : Id;
+    public string ShortResult => (Result ?? "").Length > 80 ? Result![..80] + "..." : (Result ?? "");
+    public string StatusIcon  => Status switch
+    {
+        "completed"  => "OK",
+        "failed"     => "X",
+        "processing" => ">>",
+        _            => "-"
+    };
 }
 
-// â”€â”€ Journal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -- Journal ---------------------------------------------------------------
 
 public class JournalEntry
 {
@@ -48,11 +56,11 @@ public class JournalEntry
     public string? Detail { get; set; }
     public long Timestamp { get; set; }
 
-    public string ShortAgent  => Agent.Length > 18 ? Agent[..18] : Agent;
+    public string ShortAgent  => Agent.Length  > 18 ? Agent[..18]  : Agent;
     public string ShortTarget => Target.Length > 28 ? Target[..28] : Target;
 }
 
-// â”€â”€ Telemetry â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -- Telemetry -------------------------------------------------------------
 
 public class NodeTelemetry
 {
@@ -98,9 +106,9 @@ public class SystemAlert
 
     public string LevelIcon => Level switch
     {
-        "critical" => "âœ–",
-        "warn"     => "âš ",
-        _          => "â„¹"
+        "critical" => "X",
+        "warn"     => "!",
+        _          => "i"
     };
 }
 
@@ -125,7 +133,7 @@ public class TelemetryData
     public List<Recommendation> Recommendations { get; set; } = [];
 }
 
-// ── Recommendations ───────────────────────────────────────────────────────────
+// -- Recommendations -------------------------------------------------------
 
 public class Recommendation
 {
@@ -136,7 +144,7 @@ public class Recommendation
     public string ImpactLabel => ImpactMb > 0 ? $"~{ImpactMb}MB" : "";
 }
 
-// ── Facts / Knowledge Graph ────────────────────────────────────────────────────
+// -- Facts / Knowledge Graph -----------------------------------------------
 
 public class FactEntry
 {
@@ -146,8 +154,8 @@ public class FactEntry
     public string Source { get; set; } = "";
     public string Tags { get; set; } = "";
     public long   UpdatedAt { get; set; }
-    public string ShortKey   => Key.Length   > 28 ? Key[..28]   + "…" : Key;
-    public string ShortValue => Value.Length > 55 ? Value[..55] + "…" : Value;
+    public string ShortKey   => Key.Length   > 28 ? Key[..28]   + "..." : Key;
+    public string ShortValue => Value.Length > 55 ? Value[..55] + "..." : Value;
 }
 
 public class FactSearchResult
@@ -157,7 +165,7 @@ public class FactSearchResult
     public int             Total   { get; set; }
 }
 
-// ── MCP Dispatch ──────────────────────────────────────────────────────────────
+// -- MCP Dispatch ----------------------------------------------------------
 
 public class McpDispatchResult
 {
@@ -167,7 +175,7 @@ public class McpDispatchResult
     public string? Error   { get; set; }
 }
 
-// ── Workflows ─────────────────────────────────────────────────────────────────
+// -- Workflows -------------------------------------------------------------
 
 public class WorkflowStepResult
 {
@@ -189,7 +197,7 @@ public class WorkflowResult
     public string Summary => $"{CompletedSteps}/{TotalSteps} em {Timeline}ms";
 }
 
-// ── Coordinator ───────────────────────────────────────────────────────────────
+// -- Coordinator -----------------------------------------------------------
 
 public class CoordinatorLock
 {
@@ -197,7 +205,7 @@ public class CoordinatorLock
     public string AgentId   { get; set; } = "";
     public string Operation { get; set; } = "";
     public long   ExpiresAt { get; set; }
-    public string ShortPath => Path.Length > 30 ? "…" + Path[^27..] : Path;
+    public string ShortPath => Path.Length > 30 ? "..." + Path[^27..] : Path;
 }
 
 public class CoordinatorStatus
@@ -206,7 +214,7 @@ public class CoordinatorStatus
     public List<LudocTask>       RecentTasks { get; set; } = [];
 }
 
-// ── SSE Events ────────────────────────────────────────────────────────────────
+// -- SSE Events ------------------------------------------------------------
 
 public class SseJournalEvent
 {

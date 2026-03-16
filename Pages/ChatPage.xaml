@@ -81,6 +81,7 @@
                      Color="{StaticResource LudocBorder}"
                      VerticalOptions="Start"/>
             <Entry Grid.Column="0"
+                   AutomationId="input-chat"
                    Text="{Binding InputText, Mode=TwoWay}"
                    Placeholder="command…"
                    PlaceholderColor="{StaticResource LudocDim}"
@@ -91,6 +92,7 @@
                    ReturnCommand="{Binding SendCommand}"
                    IsEnabled="{Binding IsLoading, Converter={StaticResource InvertedBoolConverter}}"/>
             <Button Grid.Column="1"
+                    AutomationId="btn-send-chat"
                     Text="SEND"
                     Command="{Binding SendCommand}"
                     FontFamily="Courier New" FontSize="12"

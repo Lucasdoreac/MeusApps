@@ -15,6 +15,7 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
     private int _tickCount = 0;
 
     public ObservableCollection<LudocTask> Tasks { get; } = [];
+    public ObservableCollection<LudocTask> RecentOutputs { get; } = [];
     public ObservableCollection<JournalEntry> Journal { get; } = [];
     public ObservableCollection<ProcessInfo> TopProcesses { get; } = [];
     public ObservableCollection<SystemAlert> Alerts { get; } = [];
@@ -117,6 +118,12 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
             Tasks.Clear();
             foreach (var t in tasks) Tasks.Add(t);
             ActiveTaskCount = tasks.Count(t => t.Status is "queued" or "processing");
+
+            RecentOutputs.Clear();
+            foreach (var t in tasks.Where(t => t.Status is "completed" or "failed")
+                                   .OrderByDescending(t => t.CompletedAt)
+                                   .Take(5))
+                RecentOutputs.Add(t);
 
             Journal.Clear();
             foreach (var j in journal) Journal.Add(j);

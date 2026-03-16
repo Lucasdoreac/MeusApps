@@ -3,7 +3,7 @@ namespace matrix;
 public static class AppConfig
 {
     private const string ServerUrlKey = "ludoc_server_url";
-    private const string DefaultServerUrl = "http://localhost:9000";
+    private const string DefaultServerUrl = "http://100.127.110.63:9001";
 
     public static string ServerBase
     {
@@ -11,5 +11,6 @@ public static class AppConfig
         set => Preferences.Default.Set(ServerUrlKey, value);
     }
 
-    public const string AuthToken = "894fb65c-4118-4b4e-b90d-7c44f425703a";
+    // Tailscale VPN is trusted — no token required
+    public const string AuthToken = "";
 }

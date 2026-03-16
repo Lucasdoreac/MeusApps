@@ -6,7 +6,7 @@
              BackgroundColor="{StaticResource LudocBg}"
              Shell.NavBarIsVisible="False">
 
-    <Grid RowDefinitions="Auto, *, Auto, Auto" Padding="20">
+    <Grid RowDefinitions="Auto, *, Auto, Auto, Auto, Auto" Padding="20">
 
         <!-- Row 0: Header -->
         <HorizontalStackLayout Grid.Row="0" Spacing="10" HorizontalOptions="Center">
@@ -16,7 +16,7 @@
                    TextColor="{StaticResource LudocDim}" VerticalOptions="Center"/>
         </HorizontalStackLayout>
 
-        <!-- Row 1: Botão central + transcrição ao vivo -->
+        <!-- Row 1: Botão central -->
         <Grid Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Center">
 
             <!-- Círculo pulsante -->
@@ -33,7 +33,8 @@
             <!-- Ícone e status -->
             <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="5" WidthRequest="180">
                 <Label Text="🎙️" FontSize="48" HorizontalOptions="Center"/>
-                <Label Text="{Binding StatusText}"
+                <Label AutomationId="lbl-voice-status"
+                       Text="{Binding StatusText}"
                        FontFamily="Courier New" FontSize="13"
                        TextColor="{StaticResource LudocGreen}"
                        HorizontalOptions="Center"
@@ -42,14 +43,44 @@
             </VerticalStackLayout>
 
             <!-- Botão invisível de interação -->
-            <Button WidthRequest="250" HeightRequest="250"
+            <Button AutomationId="btn-voice-toggle"
+                    WidthRequest="250" HeightRequest="250"
                     BackgroundColor="Transparent" BorderColor="Transparent"
                     CornerRadius="125"
                     Command="{Binding ToggleRecordCommand}"/>
         </Grid>
 
-        <!-- Row 2: Tasks ativas -->
-        <Grid Grid.Row="2" HeightRequest="110" Margin="0,10,0,0">
+        <!-- Row 2: Transcrição ao vivo (karaoke reverso) -->
+        <Border Grid.Row="2" BackgroundColor="#0D0F12" StrokeShape="RoundRectangle 4"
+                Margin="0,8,0,0" MinimumHeightRequest="60"
+                IsVisible="{Binding IsRecording}">
+            <Label AutomationId="lbl-voice-transcription"
+                   Text="{Binding LiveTranscription}"
+                   FontFamily="Courier New" FontSize="14"
+                   TextColor="{StaticResource LudocGreen}"
+                   HorizontalOptions="Center" VerticalOptions="Center"
+                   HorizontalTextAlignment="Center"
+                   Margin="12,8"
+                   LineBreakMode="WordWrap"/>
+        </Border>
+
+        <!-- Row 3: Resposta do agente + indicador de áudio -->
+        <Grid Grid.Row="3" Margin="0,4,0,0"
+              IsVisible="{Binding AgentResponse, Converter={StaticResource StringNotEmptyConverter}}">
+            <BoxView Color="#0D0F12" CornerRadius="4" Opacity="0.8"/>
+            <HorizontalStackLayout Margin="10,6" Spacing="8">
+                <Label Text="🔊" IsVisible="{Binding IsPlayingAudio}"
+                       FontSize="14" VerticalOptions="Center"/>
+                <Label Text="{Binding RoutedTo}" FontFamily="Courier New" FontSize="9"
+                       TextColor="{StaticResource LudocDim}" VerticalOptions="Center"/>
+                <Label Text="{Binding AgentResponse}" FontFamily="Courier New" FontSize="11"
+                       TextColor="{StaticResource LudocText2}" VerticalOptions="Center"
+                       LineBreakMode="TailTruncation" MaxLines="3"/>
+            </HorizontalStackLayout>
+        </Grid>
+
+        <!-- Row 4: Tasks ativas -->
+        <Grid Grid.Row="4" HeightRequest="110" Margin="0,10,0,0">
             <BoxView Color="#0D0F12" CornerRadius="4" Opacity="0.6"/>
             <VerticalStackLayout Margin="10,6">
                 <Label Text="TASKS ATIVAS" FontFamily="Courier New" FontSize="9"
@@ -76,8 +107,8 @@
             </VerticalStackLayout>
         </Grid>
 
-        <!-- Row 3: Journal ao vivo -->
-        <Grid Grid.Row="3" HeightRequest="160" Margin="0,8,0,0">
+        <!-- Row 5: Journal ao vivo -->
+        <Grid Grid.Row="5" HeightRequest="160" Margin="0,8,0,0">
             <BoxView Color="#0D0F12" CornerRadius="4" Opacity="0.6"/>
             <VerticalStackLayout Margin="10,6">
                 <Label Text="JOURNAL" FontFamily="Courier New" FontSize="9"

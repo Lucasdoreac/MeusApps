@@ -1,12 +1,11 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
+using CommunityToolkit.Maui.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using matrix.Models;
 using matrix.Services;
-
-#if WINDOWS
-using Windows.Media.SpeechRecognition;
-#endif
+using Plugin.Maui.Audio;
 
 namespace matrix.ViewModels;
 
@@ -14,6 +13,8 @@ public partial class VoiceViewModel : ObservableObject
 {
     private readonly LudocApiService _api;
     private readonly IDispatcher _dispatcher;
+    private readonly ISpeechToText _stt;
+    private readonly IAudioManager _audioManager;
 
     public ObservableCollection<LudocTask> ActiveTasks { get; } = [];
     public ObservableCollection<JournalEntry> JournalEntries { get; } = [];
@@ -22,21 +23,27 @@ public partial class VoiceViewModel : ObservableObject
     [ObservableProperty] private bool _isProcessing;
     [ObservableProperty] private string _statusText;
     [ObservableProperty] private string _liveTranscription;
+    [ObservableProperty] private string _agentResponse;
+    [ObservableProperty] private bool _isPlayingAudio;
+    [ObservableProperty] private string _routedTo;
 
     private CancellationTokenSource? _pollCts;
+    private CancellationTokenSource? _sttCts;
+    private string _lastKnownVoiceId = "init";
 
-#if WINDOWS
-    private SpeechRecognizer? _speechRecognizer;
-#endif
-
-    public VoiceViewModel(LudocApiService api, IDispatcher dispatcher)
+    public VoiceViewModel(LudocApiService api, IDispatcher dispatcher,
+        ISpeechToText stt, IAudioManager audioManager)
     {
         _api = api;
         _dispatcher = dispatcher;
+        _stt = stt;
+        _audioManager = audioManager;
         _isRecording = false;
         _isProcessing = false;
         _statusText = "Aguardando...";
         _liveTranscription = "";
+        _agentResponse = "";
+        _routedTo = "";
     }
 
     // ── Polling ───────────────────────────────────────────────
@@ -98,64 +105,57 @@ public partial class VoiceViewModel : ObservableObject
 
     private async Task StartRecordingAsync()
     {
-#if WINDOWS
+        var status = await _stt.RequestPermissions();
+        if (!status)
+        {
+            StatusText = "Permissão de microfone negada.";
+            return;
+        }
+
+        LiveTranscription = "";
+        AgentResponse = "";
+        RoutedTo = "";
+        IsRecording = true;
+        StatusText = "Ouvindo...";
+
+        _sttCts = new CancellationTokenSource();
         try
         {
-            _speechRecognizer = new SpeechRecognizer();
-            _speechRecognizer.ContinuousRecognitionSession.ResultGenerated += OnSpeechResult;
-            await _speechRecognizer.ContinuousRecognitionSession.StartAsync();
-            LiveTranscription = "";
-            IsRecording = true;
-            StatusText = "Ouvindo...";
+            await _stt.StartListenAsync(
+                CultureInfo.GetCultureInfo("pt-BR"),
+                _sttCts.Token);
+
+            _stt.RecognitionResultUpdated += OnRecognitionUpdated;
         }
         catch (Exception ex)
         {
-            StatusText = $"Erro mic: {ex.Message[..Math.Min(30, ex.Message.Length)]}";
+            IsRecording = false;
+            StatusText = $"Erro mic: {ex.Message[..Math.Min(40, ex.Message.Length)]}";
         }
-#else
-        // Fallback simulado em outras plataformas
-        IsRecording = true;
-        StatusText = "Ouvindo... (simulado)";
-        await Task.Delay(2000);
-#endif
     }
 
     private async Task StopRecordingAsync()
     {
-#if WINDOWS
+        _stt.RecognitionResultUpdated -= OnRecognitionUpdated;
+        _sttCts?.Cancel();
+
         string finalText = LiveTranscription;
-        if (_speechRecognizer != null)
-        {
-            _speechRecognizer.ContinuousRecognitionSession.ResultGenerated -= OnSpeechResult;
-            await _speechRecognizer.ContinuousRecognitionSession.StopAsync();
-            _speechRecognizer.Dispose();
-            _speechRecognizer = null;
-        }
         IsRecording = false;
         IsProcessing = true;
         StatusText = "Enviando...";
+
+        await _stt.StopListenAsync(CancellationToken.None);
         await SendToAgentAsync(finalText);
-#else
-        IsRecording = false;
-        IsProcessing = true;
-        StatusText = "Enviando...";
-        await SendToAgentAsync("Qual o status do sistema?");
-#endif
     }
 
-#if WINDOWS
-    private void OnSpeechResult(
-        SpeechContinuousRecognitionSession sender,
-        SpeechContinuousRecognitionResultGeneratedEventArgs args)
+    private void OnRecognitionUpdated(object? sender, SpeechToTextRecognitionResultUpdatedEventArgs e)
     {
-        if (args.Result.Confidence == SpeechRecognitionConfidence.Rejected) return;
         _dispatcher.Dispatch(() =>
         {
-            LiveTranscription = args.Result.Text;
-            StatusText = LiveTranscription;
+            LiveTranscription = e.RecognitionResult;
+            StatusText = LiveTranscription.Length > 0 ? LiveTranscription : "Ouvindo...";
         });
     }
-#endif
 
     // ── Envio ao agente ───────────────────────────────────────
 
@@ -171,6 +171,10 @@ public partial class VoiceViewModel : ObservableObject
             return;
         }
 
+        // Capturar latest_voice_id antes de enviar
+        var healthBefore = await _api.GetHealthAsync();
+        _lastKnownVoiceId = healthBefore?.LatestVoiceId ?? "init";
+
         var response = await _api.SendVoiceInputAsync(transcription);
 
         _dispatcher.Dispatch(() =>
@@ -178,21 +182,91 @@ public partial class VoiceViewModel : ObservableObject
             if (response == null)
             {
                 StatusText = "Erro na comunicação.";
+                IsProcessing = false;
+                return;
             }
-            else if (!string.IsNullOrEmpty(response.Response))
+
+            RoutedTo = response.RoutedTo;
+
+            if (!string.IsNullOrEmpty(response.Response))
             {
-                StatusText = "Pronto.";
+                AgentResponse = response.Response;
+                StatusText = "Reproduzindo...";
+                _ = SpeakAndPlayAsync(response.Response);
             }
             else if (!string.IsNullOrEmpty(response.TaskId))
             {
                 var shortId = response.TaskId[..Math.Min(8, response.TaskId.Length)];
                 StatusText = $"Task: {shortId}…";
+                IsProcessing = false;
             }
             else
             {
                 StatusText = $"→ {response.RoutedTo}";
+                IsProcessing = false;
             }
-            IsProcessing = false;
         });
+    }
+
+    // ── TTS playback ──────────────────────────────────────────
+
+    private async Task SpeakAndPlayAsync(string text)
+    {
+        try
+        {
+            // Pedir ao servidor para sintetizar
+            await _api.SpeakAsync(text);
+
+            // Poll /health até latest_voice_id mudar (max 15s)
+            string? newVoiceId = null;
+            for (int i = 0; i < 30; i++)
+            {
+                await Task.Delay(500);
+                var h = await _api.GetHealthAsync();
+                if (h != null && h.LatestVoiceId != _lastKnownVoiceId)
+                {
+                    newVoiceId = h.LatestVoiceId;
+                    break;
+                }
+            }
+
+            if (newVoiceId == null)
+            {
+                _dispatcher.Dispatch(() => { StatusText = "Pronto."; IsProcessing = false; });
+                return;
+            }
+
+            // Download do WAV
+            var stream = await _api.GetVoiceStreamAsync(newVoiceId);
+            if (stream == null)
+            {
+                _dispatcher.Dispatch(() => { StatusText = "Pronto."; IsProcessing = false; });
+                return;
+            }
+
+            _dispatcher.Dispatch(() => IsPlayingAudio = true);
+
+            var player = _audioManager.CreatePlayer(stream);
+            player.PlaybackEnded += (_, _) =>
+            {
+                _dispatcher.Dispatch(() =>
+                {
+                    IsPlayingAudio = false;
+                    StatusText = "Pronto.";
+                    IsProcessing = false;
+                });
+                player.Dispose();
+            };
+            player.Play();
+        }
+        catch
+        {
+            _dispatcher.Dispatch(() =>
+            {
+                IsPlayingAudio = false;
+                StatusText = "Pronto.";
+                IsProcessing = false;
+            });
+        }
     }
 }

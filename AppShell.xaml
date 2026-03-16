@@ -3,12 +3,30 @@
     x:Class="matrix.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:matrix"
-    Title="matrix">
+    xmlns:pages="clr-namespace:matrix.Pages"
+    Shell.NavBarIsVisible="False"
+    BackgroundColor="{StaticResource LudocBg}"
+    FlyoutBehavior="Disabled">
 
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+    <TabBar>
+        <Tab Title="DASH">
+            <ShellContent ContentTemplate="{DataTemplate pages:DashboardPage}" Route="Dashboard"/>
+        </Tab>
+        <Tab Title="VOICE">
+            <ShellContent ContentTemplate="{DataTemplate pages:VoicePage}" Route="Voice"/>
+        </Tab>
+        <Tab Title="CHAT">
+            <ShellContent ContentTemplate="{DataTemplate pages:ChatPage}" Route="Chat"/>
+        </Tab>
+        <Tab Title="CTRL">
+            <ShellContent ContentTemplate="{DataTemplate pages:ControlPage}" Route="Control"/>
+        </Tab>
+        <Tab Title="FACTS">
+            <ShellContent ContentTemplate="{DataTemplate pages:FactsPage}" Route="Facts"/>
+        </Tab>
+        <Tab Title="CFG">
+            <ShellContent ContentTemplate="{DataTemplate pages:SettingsPage}" Route="Settings"/>
+        </Tab>
+    </TabBar>
 
 </Shell>

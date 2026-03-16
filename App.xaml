@@ -2,6 +2,7 @@
 <Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:matrix"
+             xmlns:conv="clr-namespace:matrix.Converters"
              x:Class="matrix.App">
     <Application.Resources>
         <ResourceDictionary>
@@ -9,6 +10,24 @@
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- ── Converters ─────────────────────────────────────── -->
+            <conv:SenderColorConverter        x:Key="SenderColorConverter"/>
+            <conv:SenderTextColorConverter    x:Key="SenderTextColorConverter"/>
+            <conv:IntToProgressConverter      x:Key="IntToProgressConverter"/>
+            <conv:RamToProgressConverter      x:Key="RamToProgressConverter"/>
+            <conv:OnlineStatusConverter       x:Key="OnlineStatusConverter"/>
+            <conv:OnlineColorConverter        x:Key="OnlineColorConverter"/>
+            <conv:TaskStatusColorConverter    x:Key="TaskStatusColorConverter"/>
+            <conv:ThresholdColorConverter     x:Key="ThresholdColorConverter"/>
+            <conv:RamColorConverter           x:Key="RamColorConverter"/>
+            <conv:DiskColorConverter          x:Key="DiskColorConverter"/>
+            <conv:PagefileColorConverter      x:Key="PagefileColorConverter"/>
+            <conv:IntToBoolConverter          x:Key="IntToBoolConverter"/>
+            <conv:InvertedBoolConverter       x:Key="InvertedBoolConverter"/>
+            <conv:InverseBoolConverter        x:Key="InverseBoolConverter"/>
+            <conv:StringNotEmptyConverter     x:Key="StringNotEmptyConverter"/>
+            <conv:VoiceButtonColorConverter   x:Key="VoiceButtonColorConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

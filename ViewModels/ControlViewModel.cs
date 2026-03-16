@@ -115,7 +115,7 @@ public partial class ControlViewModel : ObservableObject, IDisposable
     [RelayCommand]
     public async Task OpenVoiceAsync()
     {
-        await Shell.Current.GoToAsync("//VoicePage");
+        await Shell.Current.GoToAsync("//Voice");
     }
 
     [RelayCommand]

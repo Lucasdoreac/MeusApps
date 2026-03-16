@@ -1,5 +1,6 @@
 using System.Text.Json;
 using matrix.Models;
+using Plugin.Maui.Audio;
 
 namespace matrix.Services;
 
@@ -45,8 +46,8 @@ public class LudocSseService : IDisposable
                     {
                         var e = JsonSerializer.Deserialize<SseJournalEvent>(json, _json);
                         if (e != null) EventReceived?.Invoke(e);
-                        // Narração Automática: Tudo o que chega no Journal é narrado
-                        if (!string.IsNullOrEmpty(e?.Detail)) _ = _api?.SpeakAsync(e.Detail);
+                        // Narração Automática: sintetiza no servidor E reproduz no dispositivo
+                        if (!string.IsNullOrEmpty(e?.Detail)) _ = SpeakAndPlayAsync(e.Detail);
                     }
                     catch { /* skip malformed event */ }
                 }
@@ -54,6 +55,27 @@ public class LudocSseService : IDisposable
             catch (OperationCanceledException) { break; }
             catch { await Task.Delay(8000, ct); }
         }
+    }
+
+    private async Task SpeakAndPlayAsync(string text)
+    {
+        try
+        {
+            // Step 1: sintetiza no servidor
+            await _api.SpeakAsync(text);
+
+            // Step 2: busca o WAV sintetizado e reproduz via Plugin.Maui.Audio
+            var audioStream = await _api.GetVoiceStreamAsync("latest");
+            if (audioStream == null) return;
+
+            var ms = new MemoryStream();
+            await audioStream.CopyToAsync(ms);
+            ms.Position = 0;
+
+            var player = AudioManager.Current.CreatePlayer(ms);
+            player.Play();
+        }
+        catch { }
     }
 
     public void Stop() => _cts?.Cancel();

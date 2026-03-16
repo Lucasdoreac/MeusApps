@@ -41,4 +41,16 @@
     <SolidColorBrush x:Key="Gray600Brush" Color="{StaticResource Gray600}"/>
     <SolidColorBrush x:Key="Gray900Brush" Color="{StaticResource Gray900}"/>
     <SolidColorBrush x:Key="Gray950Brush" Color="{StaticResource Gray950}"/>
+
+    <!-- ── Ludoc OS Design System ─────────────────────────────── -->
+    <Color x:Key="LudocBg">#0A0C0F</Color>
+    <Color x:Key="LudocBg1">#0D0F12</Color>
+    <Color x:Key="LudocBorder">#1A2030</Color>
+    <Color x:Key="LudocGreen">#00FF88</Color>
+    <Color x:Key="LudocAmber">#FFB800</Color>
+    <Color x:Key="LudocRed">#FF3355</Color>
+    <Color x:Key="LudocBlue">#4488FF</Color>
+    <Color x:Key="LudocText">#C8D4E0</Color>
+    <Color x:Key="LudocText2">#8899AA</Color>
+    <Color x:Key="LudocDim">#3A4455</Color>
 </ResourceDictionary>
