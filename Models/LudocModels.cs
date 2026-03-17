@@ -55,9 +55,33 @@ public class JournalEntry
     public string Target { get; set; } = "";
     public string? Detail { get; set; }
     public long Timestamp { get; set; }
+    public string? Tldr { get; set; }
+    public List<string> Concepts { get; set; } = [];
+    public List<string> BiasFlags { get; set; } = [];
 
     public string ShortAgent  => Agent.Length  > 18 ? Agent[..18]  : Agent;
     public string ShortTarget => Target.Length > 28 ? Target[..28] : Target;
+}
+
+public class ConceptFrequency
+{
+    public string Concept { get; set; } = "";
+    public int Count { get; set; }
+    public string Label => $"{Concept} \u00d7{Count}";
+}
+
+public class JournalInsightsResponse
+{
+    public List<ConceptFrequency> TopConcepts { get; set; } = [];
+    public int Entries { get; set; }
+    public string Period { get; set; } = "24h";
+}
+
+public class VoiceAnalysis
+{
+    public string Tldr { get; set; } = "";
+    public List<string> Concepts { get; set; } = [];
+    public List<string> BiasFlags { get; set; } = [];
 }
 
 // -- Telemetry -------------------------------------------------------------

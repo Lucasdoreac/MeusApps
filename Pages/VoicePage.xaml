@@ -6,7 +6,7 @@
              BackgroundColor="{StaticResource LudocBg}"
              Shell.NavBarIsVisible="False">
 
-    <Grid RowDefinitions="Auto, *, Auto, Auto, Auto, Auto" Padding="20">
+    <Grid RowDefinitions="Auto, *, Auto, Auto, Auto, Auto, Auto" Padding="20">
 
         <!-- Row 0: Header -->
         <HorizontalStackLayout Grid.Row="0" Spacing="10" HorizontalOptions="Center">
@@ -79,8 +79,32 @@
             </HorizontalStackLayout>
         </Grid>
 
-        <!-- Row 4: Tasks ativas -->
-        <Grid Grid.Row="4" HeightRequest="110" Margin="0,10,0,0">
+        <!-- Row 4: Epistemic Mirror -->
+        <Frame Grid.Row="4" BackgroundColor="#0D1117" BorderColor="#21262D"
+               CornerRadius="8" Padding="12" Margin="0,4"
+               IsVisible="{Binding LastTldr, Converter={StaticResource StringNotEmptyConverter}}">
+            <VerticalStackLayout Spacing="8">
+                <Label Text="EPISTEMIC MIRROR" FontAttributes="Bold" FontSize="9"
+                       TextColor="#8B949E" CharacterSpacing="2"/>
+                <Label Text="{Binding LastTldr}" FontSize="12" TextColor="#E6EDF3" LineBreakMode="WordWrap"/>
+                <CollectionView ItemsSource="{Binding RecentConcepts}" HeightRequest="28"
+                                IsVisible="{Binding RecentConcepts.Count, Converter={StaticResource IntToBoolConverter}}">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Horizontal" ItemSpacing="6"/>
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:ConceptFrequency">
+                            <Frame BackgroundColor="#161B22" BorderColor="#30363D" Padding="8,4" CornerRadius="4" HasShadow="False">
+                                <Label Text="{Binding Label}" FontSize="10" TextColor="#58A6FF" VerticalOptions="Center"/>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+        </Frame>
+
+        <!-- Row 5: Tasks ativas -->
+        <Grid Grid.Row="5" HeightRequest="110" Margin="0,10,0,0">
             <BoxView Color="#0D0F12" CornerRadius="4" Opacity="0.6"/>
             <VerticalStackLayout Margin="10,6">
                 <Label Text="TASKS ATIVAS" FontFamily="Courier New" FontSize="9"
@@ -107,8 +131,8 @@
             </VerticalStackLayout>
         </Grid>
 
-        <!-- Row 5: Journal ao vivo -->
-        <Grid Grid.Row="5" HeightRequest="160" Margin="0,8,0,0">
+        <!-- Row 6: Journal ao vivo -->
+        <Grid Grid.Row="6" HeightRequest="160" Margin="0,8,0,0">
             <BoxView Color="#0D0F12" CornerRadius="4" Opacity="0.6"/>
             <VerticalStackLayout Margin="10,6">
                 <Label Text="JOURNAL" FontFamily="Courier New" FontSize="9"

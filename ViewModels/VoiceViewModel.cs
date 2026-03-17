@@ -26,6 +26,8 @@ public partial class VoiceViewModel : ObservableObject
     [ObservableProperty] private string _agentResponse;
     [ObservableProperty] private bool _isPlayingAudio;
     [ObservableProperty] private string _routedTo;
+    [ObservableProperty] private string _lastTldr;
+    public ObservableCollection<ConceptFrequency> RecentConcepts { get; } = [];
 
     private CancellationTokenSource? _pollCts;
     private CancellationTokenSource? _sttCts;
@@ -84,12 +86,25 @@ public partial class VoiceViewModel : ObservableObject
                 ActiveTasks.Add(a);
         });
 
-        var journal = await _api.GetJournalAsync(limit: 8, since: "2h");
+        var journal = await _api.GetJournalAsync(limit: 12, since: "4h");
+        var latestTldr = journal.FirstOrDefault(j => !string.IsNullOrEmpty(j.Tldr))?.Tldr ?? "";
+
         _dispatcher.Dispatch(() =>
         {
             JournalEntries.Clear();
             foreach (var j in journal) JournalEntries.Add(j);
+            LastTldr = latestTldr;
         });
+
+        var insights = await _api.GetJournalInsightsAsync("24h");
+        if (insights != null)
+        {
+            _dispatcher.Dispatch(() =>
+            {
+                RecentConcepts.Clear();
+                foreach (var c in insights.TopConcepts) RecentConcepts.Add(c);
+            });
+        }
     }
 
     // ── STT + Gravação ────────────────────────────────────────
@@ -187,6 +202,7 @@ public partial class VoiceViewModel : ObservableObject
             }
 
             RoutedTo = response.RoutedTo;
+            _ = RefreshTasksAndJournalAsync(); // Refresh insights after input
 
             if (!string.IsNullOrEmpty(response.Response))
             {

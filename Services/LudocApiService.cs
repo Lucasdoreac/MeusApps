@@ -240,6 +240,33 @@ public class LudocApiService
         catch { return null; }
     }
 
+    public async Task<JournalInsightsResponse?> GetJournalInsightsAsync(string since = "24h")
+    {
+        try
+        {
+            using var req = Req(HttpMethod.Get, $"/journal/insights?since={since}");
+            using var res = await _http.SendAsync(req);
+            if (!res.IsSuccessStatusCode) return null;
+            return JsonSerializer.Deserialize<JournalInsightsResponse>(
+                await res.Content.ReadAsStringAsync(), _json);
+        }
+        catch { return null; }
+    }
+
+    public async Task<VoiceAnalysis?> AnalyzeVoiceAsync(string transcript, string? response = null)
+    {
+        try
+        {
+            using var req = Req(HttpMethod.Post, "/voice/analyze");
+            req.Content = Json(new { transcript, response });
+            using var res = await _http.SendAsync(req);
+            if (!res.IsSuccessStatusCode) return null;
+            return JsonSerializer.Deserialize<VoiceAnalysis>(
+                await res.Content.ReadAsStringAsync(), _json);
+        }
+        catch { return null; }
+    }
+
     // ── Facts ──────────────────────────────────────────────────────────────────
 
     public async Task<List<FactEntry>> GetFactsAsync(int limit = 20)
