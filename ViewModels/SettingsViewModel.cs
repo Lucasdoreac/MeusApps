@@ -24,6 +24,13 @@ public partial class SettingsViewModel : ObservableObject
 
     partial void OnServerUrlChanged(string value)
     {
+        if (!Uri.TryCreate(value, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != "http" && uri.Scheme != "https"))
+        {
+            ConnectionStatus = "Invalid URL — must start with http:// or https://";
+            ConnectionOnline = false;
+            return;
+        }
         AppConfig.ServerBase = value;
         ConnectionStatus = "—";
         ConnectionOnline = false;

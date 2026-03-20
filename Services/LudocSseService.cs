@@ -1,5 +1,6 @@
 using System.Text.Json;
 using matrix.Models;
+using Microsoft.Extensions.Logging;
 using Plugin.Maui.Audio;
 
 namespace matrix.Services;
@@ -15,9 +16,15 @@ public class LudocSseService : IDisposable
     };
 
     private readonly LudocApiService _api;
+    private readonly ILogger<LudocSseService> _logger;
     private CancellationTokenSource? _cts;
 
-    public LudocSseService(LudocApiService api) => _api = api;
+    public LudocSseService(LudocApiService api,
+        ILogger<LudocSseService> logger)
+    {
+        _api = api;
+        _logger = logger;
+    }
 
     public void Start()
     {
@@ -45,15 +52,26 @@ public class LudocSseService : IDisposable
                     try
                     {
                         var e = JsonSerializer.Deserialize<SseJournalEvent>(json, _json);
-                        if (e != null) EventReceived?.Invoke(e);
-                        // Narração Automática: sintetiza no servidor E reproduz no dispositivo
-                        if (!string.IsNullOrEmpty(e?.Detail)) _ = SpeakAndPlayAsync(e.Detail);
+                        if (e != null) 
+                        {
+                            // Map old journal action to new type system if needed
+                            if (string.IsNullOrEmpty(e.Type) && !string.IsNullOrEmpty(e.Action))
+                                e.Type = "journal_entry";
+
+                            EventReceived?.Invoke(e);
+
+                            // Automatic Voice Narration
+                            if (e.Type == "voice_output" && !string.IsNullOrEmpty(e.Detail))
+                                _ = SpeakAndPlayAsync(e.Detail);
+                            else if (e.Type == "journal_entry" && !string.IsNullOrEmpty(e.Detail))
+                                _ = SpeakAndPlayAsync(e.Detail);
+                        }
                     }
                     catch { /* skip malformed event */ }
                 }
             }
             catch (OperationCanceledException) { break; }
-            catch { await Task.Delay(8000, ct); }
+            catch (Exception ex) { _logger.LogWarning(ex, "SSE loop error, retrying in 8s"); await Task.Delay(8000, ct); }
         }
     }
 
@@ -75,7 +93,7 @@ public class LudocSseService : IDisposable
             var player = AudioManager.Current.CreatePlayer(ms);
             player.Play();
         }
-        catch { }
+        catch (Exception ex) { _logger.LogWarning(ex, "SpeakAndPlayAsync failed"); }
     }
 
     public void Stop() => _cts?.Cancel();

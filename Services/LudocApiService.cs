@@ -3,23 +3,27 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using matrix.Models;
+using Microsoft.Extensions.Logging;
 
 namespace matrix.Services;
 
 public class LudocApiService
 {
     private readonly HttpClient _http;
+    private readonly ILogger<LudocApiService> _logger;
     private static readonly JsonSerializerOptions _json = new()
     {
         PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
     };
 
-    public LudocApiService() : this(new HttpClient { Timeout = TimeSpan.FromSeconds(90) }) { }
+    public LudocApiService() : this(new HttpClient { Timeout = TimeSpan.FromSeconds(90) },
+        Microsoft.Extensions.Logging.Abstractions.NullLogger<LudocApiService>.Instance) { }
 
-    public LudocApiService(HttpClient httpClient)
+    public LudocApiService(HttpClient httpClient, ILogger<LudocApiService> logger)
     {
         _http = httpClient;
+        _logger = logger;
     }
 
     private string Base => AppConfig.ServerBase;
@@ -55,69 +59,21 @@ public class LudocApiService
             var root = doc.RootElement;
             var data = new TelemetryData();
 
-            // /health wraps telemetry inside "telemetry" key; /system/analyze uses "snapshot"
-            var t = isHealth
-                ? (root.TryGetProperty("telemetry", out var th) ? th : root)
-                : (root.TryGetProperty("snapshot", out var ts) ? ts : root);
+            // v2.6 Health returns { status: "sovereign", metrics: { cpu, ram, disk, ... } }
+            var m = root.TryGetProperty("metrics", out var mm) ? mm : root;
 
-            if (t.TryGetProperty("node_01", out var n))
-            {
-                if (n.TryGetProperty("cpu", out var cpu)) data.Node01.Cpu = cpu.GetInt32();
-                if (n.TryGetProperty("ram", out var ram)) data.Node01.Ram = ram.GetInt32();
-            }
-            if (t.TryGetProperty("hako", out var h))
-            {
-                if (h.TryGetProperty("status", out var st)) data.Hako.Status = st.GetString() ?? "offline";
-                if (h.TryGetProperty("ram", out var hr)) data.Hako.Ram = hr.GetInt32();
-            }
-            if (t.TryGetProperty("disk", out var d))
+            if (m.TryGetProperty("cpu", out var cpu)) data.Node01.Cpu = cpu.GetInt32();
+            if (m.TryGetProperty("ram", out var ram)) data.Node01.Ram = ram.GetInt32();
+            
+            if (m.TryGetProperty("disk", out var d))
             {
                 if (d.TryGetProperty("used_gb", out var ug)) data.Disk.UsedGb = ug.GetDouble();
                 if (d.TryGetProperty("free_gb", out var fg)) data.Disk.FreeGb = fg.GetDouble();
                 if (d.TryGetProperty("total_gb", out var tg)) data.Disk.TotalGb = tg.GetDouble();
             }
-            if (t.TryGetProperty("pagefile_mb", out var pf)) data.PagefileMb = pf.GetInt64();
-            if (t.TryGetProperty("top_processes", out var procs) && procs.ValueKind == JsonValueKind.Array)
-            {
-                foreach (var p in procs.EnumerateArray())
-                {
-                    data.TopProcesses.Add(new ProcessInfo
-                    {
-                        Name    = p.TryGetProperty("name", out var pn) ? pn.GetString() ?? "" : "",
-                        Pid     = p.TryGetProperty("pid", out var pi) ? pi.GetInt32() : 0,
-                        RamMb   = p.TryGetProperty("ram_mb", out var pr) ? pr.GetInt32() : 0,
-                        CpuSecs = p.TryGetProperty("cpu_secs", out var pc) ? pc.GetInt32() : 0
-                    });
-                }
-            }
-            if (t.TryGetProperty("alerts", out var alerts) && alerts.ValueKind == JsonValueKind.Array)
-            {
-                foreach (var a in alerts.EnumerateArray())
-                {
-                    data.Alerts.Add(new SystemAlert
-                    {
-                        Level    = a.TryGetProperty("level", out var al) ? al.GetString() ?? "info" : "info",
-                        Message  = a.TryGetProperty("message", out var am) ? am.GetString() ?? "" : "",
-                        ImpactMb = a.TryGetProperty("impact_mb", out var ai) ? ai.GetInt32() : 0
-                    });
-                }
-            }
-            if (root.TryGetProperty("latest_voice_id", out var vid))
-                data.LatestVoiceId = vid.GetString() ?? "init";
 
-            if (root.TryGetProperty("recommendations", out var recs) && recs.ValueKind == JsonValueKind.Array)
-            {
-                foreach (var r in recs.EnumerateArray())
-                {
-                    data.Recommendations.Add(new Recommendation
-                    {
-                        Action   = r.TryGetProperty("action",    out var ra) ? ra.GetString() ?? "" : "",
-                        Label    = r.TryGetProperty("label",     out var rl) ? rl.GetString() ?? "" : "",
-                        ImpactMb = r.TryGetProperty("impact_mb", out var ri) ? ri.GetInt32() : 0,
-                        Priority = r.TryGetProperty("priority",  out var rp) ? rp.GetInt32() : 0
-                    });
-                }
-            }
+            if (root.TryGetProperty("status", out var st)) 
+                data.Hako.Status = st.GetString() ?? "sovereign";
 
             return data;
         }
@@ -146,14 +102,19 @@ public class LudocApiService
 
     public async Task<string?> DispatchTaskAsync(string query, string sender = "ludoc-ui")
     {
-        using var req = Req(HttpMethod.Post, "/context/dispatch/raw");
-        req.Content = Json(new { query, sender });
+        // Sovereign Kernel v2.6 uses Unified MCP Dispatch
+        using var req = Req(HttpMethod.Post, "/mcp/dispatch");
+        req.Content = Json(new { 
+            source = sender, 
+            type = "intent.voice", // Default routing for raw query
+            payload = new { text = query } 
+        });
 
         using var res = await _http.SendAsync(req);
         if (!res.IsSuccessStatusCode) return null;
 
         using var doc = JsonDocument.Parse(await res.Content.ReadAsStringAsync());
-        return doc.RootElement.TryGetProperty("id", out var id) ? id.GetString() : null;
+        return doc.RootElement.TryGetProperty("task_id", out var id) ? id.GetString() : null;
     }
 
     public async Task<LudocTask?> GetTaskAsync(string taskId)
@@ -211,7 +172,7 @@ public class LudocApiService
             req.Content = Json(new { text });
             await _http.SendAsync(req);
         }
-        catch { }
+        catch (Exception ex) { _logger.LogWarning(ex, "SpeakAsync failed"); }
     }
 
     public async Task<Stream?> GetVoiceStreamAsync(string voiceId)
@@ -397,7 +358,7 @@ public class LudocApiService
             req.Content = Json(new { agent, action, target, detail });
             await _http.SendAsync(req);
         }
-        catch { }
+        catch (Exception ex) { _logger.LogWarning(ex, "AppendJournalAsync failed"); }
     }
 
     // ── SSE stream ────────────────────────────────────────────────────────────

@@ -177,7 +177,7 @@ public class FactEntry
     public string Value { get; set; } = "";
     public string Source { get; set; } = "";
     public string Tags { get; set; } = "";
-    public long   UpdatedAt { get; set; }
+    public long   Timestamp { get; set; }
     public string ShortKey   => Key.Length   > 28 ? Key[..28]   + "..." : Key;
     public string ShortValue => Value.Length > 55 ? Value[..55] + "..." : Value;
 }
@@ -242,10 +242,12 @@ public class CoordinatorStatus
 
 public class SseJournalEvent
 {
-    public string  Id        { get; set; } = "";
-    public string  Agent     { get; set; } = "";
-    public string  Action    { get; set; } = "";
-    public string  Target    { get; set; } = "";
+    public string? Id        { get; set; }
+    public string? Type      { get; set; } // telemetry | journal_entry | voice_output
+    public string? Agent     { get; set; }
+    public string? Action    { get; set; }
+    public string? Target    { get; set; }
     public string? Detail    { get; set; }
-    public long    Timestamp { get; set; }
+    public long?   Timestamp { get; set; }
+    public object? Data      { get; set; } // Generic payload for different types
 }
