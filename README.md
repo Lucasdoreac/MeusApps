@@ -43,6 +43,14 @@ dotnet build -f net10.0-windows10.0.19041.0
 dotnet run -f net10.0-windows10.0.19041.0
 ```
 
+## Fork Maintenance
+
+O projeto está integrado ao CI/CD do monorepo DNP. Para manutenção de forks, verifique:
+
+- [FORK-PROCEDURES.md](./FORK-PROCEDURES.md) - Procedimentos completos
+- [DNP CI/CD](../../.github/workflows/) - Workflows automatizados
+- Sync automático semanal (segundas-feiras às 2h UTC)
+
 ## Configuração
 
 Em **CONFIG**, definir o URL do servidor:
