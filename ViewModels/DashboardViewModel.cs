@@ -56,8 +56,8 @@ public partial class DashboardViewModel : ObservableObject, IDisposable
                 Action = e.Action,
                 Target = e.Target,
                 Detail = e.Detail,
-                Timestamp = e.Timestamp
-            });
+                Timestamp = e.Timestamp ?? 0
+                });
             if (Journal.Count > 30) Journal.RemoveAt(Journal.Count - 1);
         });
     }

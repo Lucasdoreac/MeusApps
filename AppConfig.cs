@@ -3,7 +3,7 @@ namespace matrix;
 public static class AppConfig
 {
     private const string ServerUrlKey = "ludoc_server_url";
-    private const string DefaultServerUrl = "http://100.127.110.63:9001";
+    private const string DefaultServerUrl = "http://localhost:9001";
 
     public static string ServerBase
     {

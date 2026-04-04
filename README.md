@@ -32,7 +32,7 @@ VoicePage
 ```
 
 O context-server (`192.168.0.5:9000` ou `localhost:9000`) roteia a transcrição:
-- **Queries rápidas** → llama.cpp (qwen2.5:3b, porta 9001)
+- **Queries rápidas** → llama.cpp (qwen2.5:3b, porta 20128)
 - **Tarefas complexas** → Gemini CLI (async, retorna `task_id`)
 - **Código/arquivos** → Claude WSL
 

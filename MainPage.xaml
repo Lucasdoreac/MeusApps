@@ -19,7 +19,7 @@
                 SemanticProperties.HeadingLevel="Level1" />
 
             <Label
-                Text="Seu primeiro App Soberano&#10;Iniciando jornada acadêmica"
+                Text="Seu primeiro App Soberano&#10;Iniciando jornada acadÃªmica"
                 Style="{StaticResource SubHeadline}"
                 SemanticProperties.HeadingLevel="Level2"
                 SemanticProperties.Description="Bem vindo ao curso de PDM" />
